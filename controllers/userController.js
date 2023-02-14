@@ -1,42 +1,85 @@
-const fs = require("fs");
+const {
+  findByIdAndUpdate,
+  findByIdAndDelete,
+} = require("./../models/userModel");
 
-// Local db for now
-const users = JSON.parse(
-  fs.readFileSync(`${__dirname}/../dev-data/users.json`)
-);
+const User = require("./../models/userModel");
 
-exports.createUser = (req, res) => {
-  const userEmailExist = users.find((user) => user.email == req.body.email);
-  if (userEmailExist) {
-    return res.status(400).json({
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json({
+      status: "success",
+      results: users.length,
+      data: { users },
+    });
+  } catch (error) {
+    res.json({
       status: "fail",
-      message: "User email already exists",
+      data: { error },
     });
   }
-  let newId = users[users.length - 1].id + 1;
-  const newUser = Object.assign({ id: newId }, req.body);
-  users.push(newUser);
-  fs.writeFile(
-    `${__dirname}/../dev-data/users.json`,
-    JSON.stringify(users),
-    (err) => {
-      res.status(201).json({
-        status: "success",
-        data: newUser,
-      });
-    }
-  );
 };
-exports.getUser = (req, res) => {
-  const userExist = users.find(user => user.email === req.body.email && user.password === req.body.password)
-  if (!userExist) {
-    return res.status(400).json({
-      status: 'fail',
-      message:'account does not exist'
-    })
+
+exports.getUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    res.status(200).json({
+      status: "success",
+      data: { user },
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      data: { error },
+    });
   }
-  res.status().json({
-    status: "success",
-    data: "user info to be inplemented in a bit sha",
-  });
+};
+
+exports.createUser = async (req, res) => {
+  try {
+    const newUser = await User.create(req.body);
+    res.status(201).json({
+      status: "success",
+      data: newUser,
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: "fail",
+      data: { error },
+    });
+  }
+};
+
+exports.updateUser = async (req, res) => {
+  try {
+    const updateUser = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    res.status(200).json({
+      status: "success",
+      data: { updateUser },
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: "fail",
+      data: { error },
+    });
+  }
+};
+
+exports.deleteUser = async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.status(204).json({
+      status: "success",
+      data: null,
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: "fail",
+      data: error,
+    });
+  }
 };

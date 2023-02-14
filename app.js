@@ -3,15 +3,10 @@ const express = require("express");
 const app = express();
 app.use(express.json())
 
-// app.use('/sign-up', (req, res) =>{
-//     console.log(req.body)
-//     res.json({
-//         message: "message from the backend"
-//     })
-// })
-
 const userRouter = require('./routes/userRoutes')
+const productRouter = require('./routes/productRoutes')
 
-app.use('/', userRouter)
+app.use('/user', userRouter)
+app.use('/product', productRouter)
 
 module.exports = app;

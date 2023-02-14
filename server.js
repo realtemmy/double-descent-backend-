@@ -1,10 +1,17 @@
-const dotenv = require('dotenv')
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+const app = require("./app");
+dotenv.config({ path: "./config.env" });
 
-const app = require('./app');
+const DB = process.env.DATABASE_LOCAL;
 
-dotenv.config({ path: './config.env' })
+mongoose.set("strictQuery", false);
 
-const PORT = process.env.PORT || 4000
+mongoose.connect(DB, () => {
+  console.log("Connected to MongoDB");
+});
+
+const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
   console.log(`App is running on port ${PORT}`);
