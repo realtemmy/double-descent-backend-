@@ -23,7 +23,9 @@ exports.getAllUsers = async (req, res) => {
 
 exports.getUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    // let getUser = User.findById(req.body.id)
+    // const user = getUser.findOne({email: req.body.email})
+    const user = await User.findOne({email: req.body.email});
     res.status(200).json({
       status: "success",
       data: { user },
@@ -53,10 +55,12 @@ exports.createUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    const updateUser = await User.findByIdAndUpdate(req.params.id, req.body, {
+    console.log(req.body.id);
+    const updateUser = await User.findByIdAndUpdate(req.body.id, req.body, {
       new: true,
       runValidators: true,
     });
+    console.log(updateUser);
     res.status(200).json({
       status: "success",
       data: { updateUser },

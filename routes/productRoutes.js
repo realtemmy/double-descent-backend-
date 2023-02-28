@@ -1,8 +1,21 @@
-const express = require('express');
-const productController = require('./../controllers/productController')
+const express = require("express");
+const productController = require("./../controllers/productController");
 
 const router = express.Router();
 
-router.route('/shop').get(productController.getAllProducts)
-gi
-module.exports = router
+router
+  .route("/")
+  .get(productController.getAllProducts)
+  .post(productController.createProduct);
+
+router.route("/featured-products").get(productController.getFeaturedProducts);
+
+router
+  .route("/:id")
+  .get(productController.getProduct)
+  .patch(productController.updateProduct)
+  .delete(productController.deleteProduct);
+
+// router.route("/featured-products").get(productController.getFeaturedProducts);
+
+module.exports = router;
