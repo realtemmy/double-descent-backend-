@@ -10,16 +10,15 @@ const sendErrorDev = (err, res) => {
 };
 
 const sendErrorProd = (err, res) => {
-    // Trusted error I've accounted for.
+  // Trusted error I've accounted for.
   if (err.isOperational) {
     res.status(err.statusCode).json({
       status: err.status,
       message: err.message,
     });
   } else {
-    console.error("Error: ", err)
+    console.error("Error: ", err);
     res.status(500).json({
-
       status: "error",
       message: "Something went wrong!",
     });
