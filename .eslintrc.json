@@ -1,17 +1,17 @@
-{
-    "env": {
-        "browser": true,
-        "commonjs": true,
-        "es2021": true
-    },
-    "extends": "airbnb-base",
-    "overrides": [
-    ],
-    "parserOptions": {
-        "ecmaVersion": "latest"
-    },
-    "rules": {
-        "linebreak-style":0,
-        "quotes":[2, "double", { "avoidEscape": true }]
-    }
-}
+// {
+//     "env": {
+//         "browser": true,
+//         "commonjs": true,
+//         "es2021": true
+//     },
+//     "extends": "airbnb-base",
+//     "overrides": [
+//     ],
+//     "parserOptions": {
+//         "ecmaVersion": "latest"
+//     },
+//     "rules": {
+//         "linebreak-style":0,
+//         "quotes":[2, "double", { "avoidEscape": true }]
+//     }
+// }
