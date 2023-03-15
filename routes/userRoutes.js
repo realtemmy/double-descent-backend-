@@ -1,8 +1,12 @@
+/* eslint-disable import/no-useless-path-segments */
 const express = require("express");
 
 const userControllers = require("./../controllers/userController");
+const authController = require("./../controllers/authController");
 
 const router = express.Router();
+
+router.post("/signup", authController.signup);
 
 router
   .route("/")
@@ -14,6 +18,5 @@ router
   .delete(userControllers.deleteUser)
   .patch(userControllers.updateUser)
   .post(userControllers.getUser);
-
 
 module.exports = router;

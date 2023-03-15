@@ -6,10 +6,14 @@ process.on("uncaughtException", err=>{
   console.log("UNCAUGHT EXCEPTION, shutting down");
   console.log(err.name, err.message);
   process.exit()
-})
+});
+
+// console.log("Before app:", process.env.NODE_ENV);
 
 const app = require("./app");
 dotenv.config({ path: "./config.env" });
+
+// console.log("After app:", process.env.NODE_ENV);
 
 const DB = process.env.DATABASE_LOCAL;
 

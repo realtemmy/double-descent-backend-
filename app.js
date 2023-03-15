@@ -1,6 +1,6 @@
 const express = require("express");
 const AppError = require("./utils/appError");
-const globalErrorHandler = require('./controllers/errorController')
+const globalErrorHandler = require("./controllers/errorController");
 
 const app = express();
 app.use(express.json());

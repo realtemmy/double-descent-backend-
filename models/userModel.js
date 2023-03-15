@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "a user must have an email"],
     unique: true,
-    lowercase:true
+    lowercase: true,
   },
   password: {
     type: String,
@@ -20,9 +20,9 @@ const userSchema = new mongoose.Schema({
     required: [true, "please input confirm password"],
   },
   photo: String,
-  isAdmin: {
-    type: Boolean,
-    default: false,
+  role: {
+    type: String,
+    default: "user",
   },
 });
 

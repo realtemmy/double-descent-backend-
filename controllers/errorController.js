@@ -1,4 +1,5 @@
-const AppError = require("./../utils/appError");
+/* eslint-disable no-param-reassign */
+// const AppError = require("./../utils/appError");
 
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
@@ -34,4 +35,5 @@ module.exports = (err, req, res, next) => {
   } else if (process.env.NODE_ENV === "production") {
     sendErrorProd(err, res);
   }
+  next();
 };

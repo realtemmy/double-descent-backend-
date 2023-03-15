@@ -15,10 +15,6 @@ const productSchema = mongoose.Schema({
     ref: "Category",
     required: [true, "a product must belong to a category"],
   },
-  section: {
-    type: String,
-    required: [true, "a product must have a section"],
-  },
   isFeatured: {
     type: Boolean,
     default: false,
