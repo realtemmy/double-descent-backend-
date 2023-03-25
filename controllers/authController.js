@@ -17,7 +17,7 @@ exports.signup = catchAsync(async (req, res) => {
     email: req.body.email,
     password: req.body.password,
     confirmPassword: req.body.confirmPassword,
-    passwordChangedAt: req.body.passwordChangedAt,
+    // passwordChangedAt: req.body.passwordChangedAt,
   });
   // eslint-disable-next-line no-underscore-dangle
   const token = signToken(newUser._id);
