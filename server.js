@@ -30,7 +30,7 @@ const server = app.listen(PORT, () => {
   console.log(`App is running on port ${PORT}`);
 });
 
-// All async uncught error
+// All async uncaught error
 process.on("unhandledRejection", (err)=>{
   console.log(err.name, err.message);
   console.log("UNHANDLED REJECTION, shutting down");

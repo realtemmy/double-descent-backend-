@@ -55,7 +55,9 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
 exports.getProduct = catchAsync(async (req, res, next) => {
   const product = await Product.findById(req.params.id).populate("category");
   if (!product) {
-    return new AppError(`No product found with that ID: ${req.params.id}`, 404);
+    return next(
+      new AppError(`No product found with that ID: ${req.params.id}`, 404)
+    );
   }
   res.status(200).json({
     status: "success",
@@ -78,7 +80,9 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
   });
 
   if (!product) {
-    return new AppError(`No product found with that ID: ${req.params.id}`, 404);
+    return next(
+      new AppError(`No product found with that ID: ${req.params.id}`, 404)
+    );
   }
 
   res.status(200).json({
@@ -90,7 +94,9 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 exports.deleteProduct = catchAsync(async (req, res, next) => {
   const product = await Product.findByIdAndDelete(req.params.id);
   if (!product) {
-    return new AppError(`No product found with that ID: ${req.params.id}`, 404);
+    return next(
+      new AppError(`No product found with that ID: ${req.params.id}`, 404)
+    );
   }
   res.status(204).json({
     status: "success",
