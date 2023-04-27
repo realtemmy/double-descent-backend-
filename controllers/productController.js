@@ -2,7 +2,7 @@ const Product = require("./../models/productModel");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 
-exports.getFeaturedProducts = catchAsync(async (req, res, next) => {
+exports.getFeaturedProducts = catchAsync(async (req, res) => {
   const featuredProducts = await Product.find({ isFeatured: true });
 
   console.log(featuredProducts);

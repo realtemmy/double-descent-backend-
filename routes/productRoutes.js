@@ -4,17 +4,19 @@ const authController = require("./../controllers/authController");
 
 const router = express.Router();
 
+// change restrictTo to restrictToAdmin
+
 router
   .route("/")
-  .get(authController.protect, productController.getAllProducts)
-  .post(productController.createProduct);
+  .get(productController.getAllProducts)
+  .post(authController.protect, authController.restrict, productController.createProduct);
 
 router.route("/featured-products").get(productController.getFeaturedProducts);
 
 router
   .route("/:id")
   .get(productController.getProduct)
-  .patch(productController.updateProduct)
+  .patch(authController.protect, authController.restrict, productController.updateProduct)
   .delete(
     authController.protect,
     authController.restrict,

@@ -5,13 +5,15 @@ const globalErrorHandler = require("./controllers/errorController");
 const app = express();
 app.use(express.json());
 
-const userRouter = require("./routes/userRoutes");
-const productRouter = require("./routes/productRoutes");
-const categoryRouter = require("./routes/categoryRoutes");
+const userRoutes = require("./routes/userRoutes");
+const productRoutes = require("./routes/productRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 
-app.use("/api/v1/user", userRouter);
-app.use("/api/v1/products", productRouter);
-app.use("/api/v1/category", categoryRouter);
+app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/products", productRoutes);
+app.use("/api/v1/category", categoryRoutes);
+app.use("/api/v1/order", orderRoutes);
 
 // All undefined routes
 app.use("*", (req, res, next) => {

@@ -18,8 +18,7 @@ const sendErrorDev = (err, res) => {
 };
 
 const sendErrorProd = (err, res) => {
-  // Trusted error I've accounted for.
-  console.log("OPERATIONAL: ", err.isOperational);
+  // Trusted error I've accounted for
   if (err.isOperational) {
     res.status(err.statusCode).json({
       status: err.status,

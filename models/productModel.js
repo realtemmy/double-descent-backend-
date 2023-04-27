@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const productSchema = mongoose.Schema({
+const productSchema = new mongoose.Schema({
   name: {
     type: String,
     unique: true,
@@ -19,10 +19,6 @@ const productSchema = mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  brand: {
-    type: String,
-    required: [true, "a product must have a brand"],
-  },
   createdAt: {
     type: Date,
     default: Date.now(),
@@ -31,8 +27,10 @@ const productSchema = mongoose.Schema({
     type: String,
     required: [true, "a product must have description"],
   },
-  summary: String,
-  images: [String],
+  category: {
+    type: mongoose.Schema.ObjectId,
+    ref: "Category",
+  },
 });
 
 const Product = mongoose.model("Product", productSchema);
