@@ -9,7 +9,7 @@ const orderSchema = new mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
-  products: [String], //embedding products
+  // products: [String], //embedding products
   location:{
     type:String,
     required: [true, "Please input location for delivery"]

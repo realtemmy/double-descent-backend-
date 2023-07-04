@@ -51,16 +51,29 @@ userSchema.methods.comparePasswords = async function (
 };
 
 userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
-  const changedTimeStamp = parseInt(
-    this.passwordChangedAt.getTime() / 1000,
-    10
-  );
-  if (this.passwordChangedAt) {
-    return JWTTimeStamp < changedTimeStamp;
-  }
+ if (this.passwordChangedAt) {
+   const changedTimeStamp = parseInt(
+     this.passwordChangedAt.getTime() / 1000,
+     10
+   );
+   return JWTTimestamps < changedTimeStamp;
+ }
 
   return false;
 };
+
+// userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
+//   if (this.passwordChangedAt) {
+//     // Add null check
+//     const changedTimeStamp = parseInt(
+//       this.passwordChangedAt.getTime() / 1000,
+//       10
+//     );
+//     return JWTTimeStamp < changedTimeStamp;
+//   }
+
+//   return false;
+// };
 
 userSchema.methods.createPasswordResetToken = function () {
   // generate 32 byte token

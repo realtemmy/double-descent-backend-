@@ -10,11 +10,6 @@ const productSchema = new mongoose.Schema({
     type: Number,
     required: [true, "a product must have a price"],
   },
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Category",
-    required: [true, "a product must belong to a category"],
-  },
   isFeatured: {
     type: Boolean,
     default: false,
@@ -27,10 +22,11 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: [true, "a product must have description"],
   },
-  category: {
+  section: {
     type: mongoose.Schema.ObjectId,
-    ref: "Category",
-  },
+    ref:"Section",
+    required:[true, "a product must belong to a section"]
+  }
 });
 
 const Product = mongoose.model("Product", productSchema);

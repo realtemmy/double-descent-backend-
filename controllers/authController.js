@@ -14,7 +14,7 @@ const signToken = (id) => {
 };
 
 const createSendToken = (user, statusCode, res) => {
-  const token = signToken(newUser._id);
+  const token = signToken(user._id);
 
   // Cookies settings
   const cookieOptions = {
@@ -43,7 +43,6 @@ exports.signup = catchAsync(async (req, res) => {
     email: req.body.email,
     password: req.body.password,
     confirmPassword: req.body.confirmPassword,
-    // passwordChangedAt: req.body.passwordChangedAt,
   });
   // eslint-disable-next-line no-underscore-dangle
   createSendToken(newUser, 201, res);
@@ -107,7 +106,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   next();
 });
 
-exports.restrict = catchAsync((req, res, next) => {
+exports.restrictToAdmin = catchAsync((req, res, next) => {
   // might later use isAdmin in userModel, remember to change.
   if (!req.user.role === "admin") {
     return next(
@@ -118,21 +117,10 @@ exports.restrict = catchAsync((req, res, next) => {
 });
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-  // Get user based on the email POSTed
-  const user = await User.findOne({ email: req.body.email });
-  if (!user) {
-    return next(new AppError("There is no user with this email address", 404));
-  }
-  // Generate random reset token
-  const resetToken = user.createPasswordResetToken();
-  await user.save({ validateBeforeSave: false });
-});
-
-exports.forgotPassword = catchAsync(async (req, res, next) => {
   // Get user based on POSTed email
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
-    return next(new AppError("There is no user with such email", 404));
+    return next(new AppError("There is no user with this email address", 404));
   }
   // Generate a random reset token
   const resetToken = user.createPasswordResetToken();
@@ -188,7 +176,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetToken = undefined;
   user.passwordExpiresAt = undefined;
   // Log in user, send JWT
-  createSendToken(user, 200, res)
+  createSendToken(user, 200, res);
 });
 
 exports.updatePassword = async (req, res, next) => {

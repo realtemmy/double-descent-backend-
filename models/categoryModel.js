@@ -1,25 +1,27 @@
 const mongoose = require("mongoose");
+const Section = require("./sectionModel");
 
-const categorySchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "a category must have a name"],
-    unique: true,
+const categorySchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "a category must have a name"],
+      unique: true,
+    },
+    image: {
+      type: String,
+      required: [true, "a category must have an image"],
+    },
+    description: String,
   },
-  image: {
-    type: String,
-    required: [true, "a category must have an image"],
-  },
-  section: {
-    type: String,
-    required: [true, "Category must belong to a section"],
-  },
-  description: String,
-});
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
 
-// Virtual populate
-categorySchema.virtual("products", {
-  ref: "Product",
+categorySchema.virtual("sections", {
+  ref: "Section",
   foreignField: "category",
   localField: "_id",
 });
