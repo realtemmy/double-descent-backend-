@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const mongoose = require("mongoose");
+const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
@@ -12,6 +13,7 @@ const userSchema = new mongoose.Schema({
     required: [true, "a user must have an email"],
     unique: true,
     lowercase: true,
+    validate: [validator.isEmail, "Please provide a valid email."],
   },
   password: {
     type: String,
@@ -22,8 +24,17 @@ const userSchema = new mongoose.Schema({
     // Remember to validate
     type: String,
     required: [true, "please input confirm password"],
+    validate: {
+      validator: function (el) {
+        return el === this.password;
+      },
+      message: "Passwords are not the same!",
+    },
   },
-  photo: String,
+  photo: {
+    type: String,
+    default: "default.jpg",
+  },
   role: {
     // if u later change to isAdmin format, remamber to change in restrict middleware at authcontroller
     type: String,
@@ -51,13 +62,13 @@ userSchema.methods.comparePasswords = async function (
 };
 
 userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
- if (this.passwordChangedAt) {
-   const changedTimeStamp = parseInt(
-     this.passwordChangedAt.getTime() / 1000,
-     10
-   );
-   return JWTTimestamps < changedTimeStamp;
- }
+  if (this.passwordChangedAt) {
+    const changedTimeStamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    return JWTTimestamps < changedTimeStamp;
+  }
 
   return false;
 };
@@ -84,7 +95,7 @@ userSchema.methods.createPasswordResetToken = function () {
     .update(resetToken)
     .digest("hex");
 
-  console.log({resetToken}, this.passwordResetToken);
+  console.log({ resetToken }, this.passwordResetToken);
 
   // password should expire in 10 mins
   this.passwordExpiresAt = Date.now() + 10 * 1000 * 60;

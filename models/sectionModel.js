@@ -7,10 +7,6 @@ const sectionSchema = new mongoose.Schema(
       unique: true,
       required: [true, "Name for section is required"],
     },
-    image: {
-      type: String,
-      required: [true, "section must have an image"],
-    },
     category: {
       type: mongoose.Schema.ObjectId,
       ref: "Category",

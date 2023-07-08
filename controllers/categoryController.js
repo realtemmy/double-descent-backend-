@@ -1,7 +1,74 @@
-const mongoose = require("mongoose");
+const multer = require("multer");
+const sharp = require("sharp");
 const catchAsync = require("./../utils/catchAsync");
 
 const Category = require("./../models/categoryModel");
+
+// const multerStorage = multer.memoryStorage();
+
+// const multerFilter = (req, file, cb) => {
+//   if (file.mimetype.startsWith("image")) {
+//     cb(null, true);
+//   } else {
+//     cb(new AppError("Not an image! Please upload only images.", 400), false);
+//   }
+// };
+
+// const upload = multer({
+//   storage: multerStorage,
+//   fileFilter: multerFilter,
+// });
+
+// exports.uploadCategoryImage = upload.single("image");
+
+// exports.resizeCategoryImage = catchAsync(async (req, res, next) => {
+//   console.log(req.body);
+//   console.log(req.file);
+
+//   if (!req.file) next();
+
+//   // req.file.filename = `category-${Date.now()}.jpeg`
+
+//   await sharp(req.file.buffer)
+//     .resize(500, 500)
+//     .toFormat("jpeg")
+//     .jpeg({ quality: 90 })
+//     .toFile(`public/img/categories/category-${Date.now()}.jpeg`);
+
+//   next();
+// });
+
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new AppError("Not an image! Please upload only images.", 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+exports.uploadCategoryImage = upload.single("image");
+
+exports.resizeCategoryImage = catchAsync(async (req, res, next) => {
+  // console.log(req.file);
+  if (!req.file) return next();
+
+  req.body.image = `category-${Date.now()}.jpeg`;
+
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat("jpeg")
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/categories/${req.body.image}`);
+
+  next();
+});
 
 exports.getAllCategories = catchAsync(async (req, res) => {
   const categories = await Category.find();
@@ -13,7 +80,7 @@ exports.getAllCategories = catchAsync(async (req, res) => {
 });
 
 exports.getCategory = catchAsync(async (req, res) => {
-  const category = await Category.findById(req.params.id).populate('sections');
+  const category = await Category.findById(req.params.id).populate("sections");
   res.status(200).json({
     status: "success",
     data: { category },

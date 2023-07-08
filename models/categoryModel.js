@@ -12,7 +12,6 @@ const categorySchema = new mongoose.Schema(
       type: String,
       required: [true, "a category must have an image"],
     },
-    description: String,
   },
   {
     toJSON: { virtuals: true },

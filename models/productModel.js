@@ -14,9 +14,9 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now(),
+  images: {
+    type: [String],
+    required: [true, "product must have an image"],
   },
   description: {
     type: String,
@@ -24,9 +24,13 @@ const productSchema = new mongoose.Schema({
   },
   section: {
     type: mongoose.Schema.ObjectId,
-    ref:"Section",
-    required:[true, "a product must belong to a section"]
-  }
+    ref: "Section",
+    required: [true, "a product must belong to a section"],
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
 });
 
 const Product = mongoose.model("Product", productSchema);
