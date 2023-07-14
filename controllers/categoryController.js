@@ -1,8 +1,15 @@
-const multer = require("multer");
-const sharp = require("sharp");
+const cloudinary = require("./../utils/cloudinary");
 const catchAsync = require("./../utils/catchAsync");
-
 const Category = require("./../models/categoryModel");
+
+// REmember to refactor this uploading of images to a single function in utils/cloudinary
+exports.uploadCategoryImage = catchAsync(async (req, res, next) =>{
+   const imagePath = "./dev-data/images/weave-on.jpg";
+   const result = await cloudinary.uploader.upload(imagePath);
+   console.log(result.secure_url);
+   req.body.image = result.secure_url;
+   next()
+})
 
 // const multerStorage = multer.memoryStorage();
 
@@ -38,37 +45,37 @@ const Category = require("./../models/categoryModel");
 //   next();
 // });
 
-const multerStorage = multer.memoryStorage();
+// const multerStorage = multer.memoryStorage();
 
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image")) {
-    cb(null, true);
-  } else {
-    cb(new AppError("Not an image! Please upload only images.", 400), false);
-  }
-};
+// const multerFilter = (req, file, cb) => {
+//   if (file.mimetype.startsWith("image")) {
+//     cb(null, true);
+//   } else {
+//     cb(new AppError("Not an image! Please upload only images.", 400), false);
+//   }
+// };
 
-const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter,
-});
+// const upload = multer({
+//   storage: multerStorage,
+//   fileFilter: multerFilter,
+// });
 
-exports.uploadCategoryImage = upload.single("image");
+// exports.uploadCategoryImage = upload.single("image");
 
-exports.resizeCategoryImage = catchAsync(async (req, res, next) => {
-  // console.log(req.file);
-  if (!req.file) return next();
+// exports.resizeCategoryImage = catchAsync(async (req, res, next) => {
+//   // console.log(req.file);
+//   if (!req.file) return next();
 
-  req.body.image = `category-${Date.now()}.jpeg`;
+//   req.body.image = `category-${Date.now()}.jpeg`;
 
-  await sharp(req.file.buffer)
-    .resize(500, 500)
-    .toFormat("jpeg")
-    .jpeg({ quality: 90 })
-    .toFile(`public/img/categories/${req.body.image}`);
+//   await sharp(req.file.buffer)
+//     .resize(500, 500)
+//     .toFormat("jpeg")
+//     .jpeg({ quality: 90 })
+//     .toFile(`public/img/categories/${req.body.image}`);
 
-  next();
-});
+//   next();
+// });
 
 exports.getAllCategories = catchAsync(async (req, res) => {
   const categories = await Category.find();
