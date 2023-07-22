@@ -2,8 +2,13 @@ const Section = require("./../models/sectionModel");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 
+
 exports.getAllSections = catchAsync(async (req, res) => {
-  const sections = await Section.find();
+  // Get all sections = getting all sections on a particular section if request is made to
+  // the format:  /api/v1/category/:categoryId/section
+  const filter = {};
+  if (req.params.categoryId) filter = { category: req.params.categoryId };
+  const sections = await Section.find(filter);
   res.status(200).json({
     status: "success",
     results: sections.length,

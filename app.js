@@ -8,14 +8,10 @@ const app = express();
 
 app.use(express.json('static'));
 
-// app.use(express.static(path.join(__dirname, "public/img/users")));
-
 app.use(express.static("public"));
-
-// app.use('/images', express.static('public'));
-// app.use('/images', express.static('photos'))
 app.use(cors());
 
+// Remember to delete public folder containing images
 
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");

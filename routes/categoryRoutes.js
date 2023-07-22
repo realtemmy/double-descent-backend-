@@ -1,14 +1,14 @@
 const express = require("express");
 const categoryController = require("./../controllers/categoryController");
 const authController = require("./../controllers/authController");
-const productRouter = require("./../routes/productRoutes");
+const sectionRouter = require('./../routes/sectionRoutes');
 
 // category/section/products
 // provision/cereals/cornflakes
 
 const router = express.Router();
 
-router.use("/:categoryId/products", productRouter);
+router.use("/:categoryId/section", sectionRouter);
 
 router
   .route("/")

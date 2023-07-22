@@ -51,10 +51,15 @@ const cloudinary = require("./../utils/cloudinary");
 //   next();
 // });
 
-exports.uploadCloudinaryImage = catchAsync(async (req, res, next) => {
-  const imagePath = "./public/img/users/default.jpg";
-  const result = await cloudinary.uploader.upload(imagePath);
-  console.log(result.secure_url);
+exports.uploadProductImage = catchAsync(async (req, res, next) => {
+  // const imagePath = "./dev-data/images/jewelleries.jpg";
+  // const resizeImage = 
+  const result = await cloudinary.uploader.upload(imagePath, {
+    folder: "products",
+    width: 300,
+    height: 250
+  });
+  // console.log(result.secure_url);
   req.body.image = result.secure_url;
   next();
 });
@@ -62,16 +67,17 @@ exports.uploadCloudinaryImage = catchAsync(async (req, res, next) => {
 exports.getFeaturedProducts = catchAsync(async (req, res) => {
   const featuredProducts = await Product.find({ isFeatured: true });
 
-  console.log(featuredProducts);
+  // console.log(featuredProducts);
   res.status(200).json({
     status: "success",
+    results: featuredProducts.length,
     data: { featuredProducts },
   });
 });
 
 exports.getAllProducts = catchAsync(async (req, res, next) => {
   let filter = {};
-  if (req.params.categoryId) filter = { category: req.params.categoryId };
+  // if (req.params.categoryId) filter = { category: req.params.categoryId };
   const products = await Product.find(filter);
 
   res.status(200).json({

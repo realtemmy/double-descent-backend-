@@ -27,6 +27,11 @@ const productSchema = new mongoose.Schema({
     ref: "Section",
     required: [true, "a product must belong to a section"],
   },
+  category: {
+    type: mongoose.Schema.ObjectId,
+    ref: "Category",
+    required: [true, "product must belong to a category"],
+  },
   createdAt: {
     type: Date,
     default: Date.now(),

@@ -3,13 +3,17 @@ const catchAsync = require("./../utils/catchAsync");
 const Category = require("./../models/categoryModel");
 
 // REmember to refactor this uploading of images to a single function in utils/cloudinary
-exports.uploadCategoryImage = catchAsync(async (req, res, next) =>{
-   const imagePath = "./dev-data/images/weave-on.jpg";
-   const result = await cloudinary.uploader.upload(imagePath);
-   console.log(result.secure_url);
-   req.body.image = result.secure_url;
-   next()
-})
+exports.uploadCategoryImage = catchAsync(async (req, res, next) => {
+  const imagePath = "./dev-data/images/weave-on.jpg";
+  const result = await cloudinary.uploader.upload(imagePath, {
+    folder: "category",
+    width: 100,
+    height: 100,
+  });
+  console.log(result.secure_url);
+  req.body.image = result.secure_url;
+  next();
+});
 
 // const multerStorage = multer.memoryStorage();
 

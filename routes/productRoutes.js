@@ -14,7 +14,7 @@ router
     authController.restrictToAdmin,
     // productController.uploadProductImage,
     // productController.resizeProductImage,
-    productController.uploadCloudinaryImage,
+    productController.uploadProductImage,
     productController.createProduct
   );
 
