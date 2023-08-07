@@ -34,6 +34,7 @@ sectionSchema.pre("save", function (next) {
   next();
 });
 
+
 const Section = mongoose.model("Section", sectionSchema);
 
 module.exports = Section;

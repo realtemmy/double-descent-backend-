@@ -1,22 +1,41 @@
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
-  user: {
+  userId: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
   },
+  address: {
+    type: String,
+    required: [true, "Order must have an address for delivery"],
+  },
+  phone: {
+    type: Number,
+    required: [true, "Order must have a phone number"],
+  },
+  totalAmount: {
+    type: Number,
+    required: [true, "Order must have total amount"],
+  },
+  products: [
+    {
+      productName: {
+        type: String,
+        required: [true, "Product must have a name"],
+      },
+      quantity: {
+        type: Number,
+        required: [true, "Product must have a quantity"],
+      },
+    },
+  ],
   date: {
     type: Date,
     default: Date.now(),
   },
-  // products: [String], //embedding products
-  location:{
-    type:String,
-    required: [true, "Please input location for delivery"]
-  }
 });
 
-const Order = mongoose.model('Order', orderSchema);
+const Order = mongoose.model("Order", orderSchema);
 
 module.exports = Order;
 

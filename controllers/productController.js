@@ -1,63 +1,14 @@
-const multer = require("multer");
-const sharp = require("sharp");
 const Product = require("./../models/productModel");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const cloudinary = require("./../utils/cloudinary");
 
-// const multerStorage = multer.memoryStorage();
-
-// const multerFilter = (req, file, cb) => {
-//   if (file.mimetype.startsWith("image")) {
-//     cb(null, true);
-//   } else {
-//     cb(new AppError("Not an image! Please upload only images.", 400), false);
-//   }
-// };
-
-// const upload = multer({
-//   storage: multerStorage,
-//   fileFilter: multerFilter,
-// });
-
-// // For many images, use upload.array('images(name in model) 3(number of images)')
-// // and it would be stored in req.files not req.file
-// exports.uploadProductImage = upload.array("images", 3);
-
-// exports.resizeProductImage = catchAsync(async (req, res, next) => {
-//   // console.log(req.files);
-//   // console.log(req.body.section);
-//   if (!req.files) return next();
-
-//   req.body.images = [];
-
-//   await Promise.all(
-//     req.files.map(async (file, idx) => {
-//       // filename -> product-sectionId-date.jpeg
-//       const filename = `product-${req.body.section}-${Date.now()}-${
-//         idx + 1
-//       }.jpeg`;
-
-//       await sharp(file.buffer)
-//         .resize(700, 700)
-//         .toFormat("jpeg")
-//         .jpeg({ quality: 90 })
-//         .toFile(`public/img/products/${filename}`);
-
-//       req.body.images.push(filename);
-//     })
-//   );
-
-//   next();
-// });
-
 exports.uploadProductImage = catchAsync(async (req, res, next) => {
-  // const imagePath = "./dev-data/images/jewelleries.jpg";
-  // const resizeImage = 
+  const imagePath = "./dev-data/images/cosmetics.jpg";
   const result = await cloudinary.uploader.upload(imagePath, {
     folder: "products",
     width: 300,
-    height: 250
+    height: 250,
   });
   // console.log(result.secure_url);
   req.body.image = result.secure_url;
@@ -71,7 +22,7 @@ exports.getFeaturedProducts = catchAsync(async (req, res) => {
   res.status(200).json({
     status: "success",
     results: featuredProducts.length,
-    data: { featuredProducts },
+    data: featuredProducts ,
   });
 });
 
@@ -83,7 +34,7 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     results: products.length,
-    data: { products },
+    data: products ,
   });
 });
 
@@ -96,7 +47,7 @@ exports.getProduct = catchAsync(async (req, res, next) => {
   }
   res.status(200).json({
     status: "success",
-    data: { product },
+    data: product ,
   });
 });
 
@@ -105,7 +56,7 @@ exports.createProduct = catchAsync(async (req, res, next) => {
   const newProduct = await Product.create(req.body);
   res.status(201).json({
     status: "success",
-    data: { newProduct },
+    data: newProduct ,
   });
 });
 
@@ -123,11 +74,25 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    data: { product },
+    data: product ,
   });
 });
 
+// Get the public_id from the image url
+const getPublicIdFromImageUrl = (imageUrl) => {
+  const urlParts = imageUrl.split("/");
+  const filename = urlParts[urlParts.length - 1];
+  const publicId = filename.split(".")[0];
+  return publicId;
+};
+
 exports.deleteProduct = catchAsync(async (req, res, next) => {
+  // find the product to be deleted
+  const prod = await Product.findById(req.params.id);
+  const public_id = getPublicIdFromImageUrl(prod.image);
+  // Delete product from cloudinary
+  await cloudinary.uploader.destroy(public_id)
+  // Delete product from database
   const product = await Product.findByIdAndDelete(req.params.id);
   if (!product) {
     return next(

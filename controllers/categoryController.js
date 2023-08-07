@@ -1,6 +1,7 @@
 const cloudinary = require("./../utils/cloudinary");
 const catchAsync = require("./../utils/catchAsync");
 const Category = require("./../models/categoryModel");
+const AppError = require('./../utils/appError');
 
 // REmember to refactor this uploading of images to a single function in utils/cloudinary
 exports.uploadCategoryImage = catchAsync(async (req, res, next) => {
@@ -10,83 +11,16 @@ exports.uploadCategoryImage = catchAsync(async (req, res, next) => {
     width: 100,
     height: 100,
   });
-  console.log(result.secure_url);
   req.body.image = result.secure_url;
   next();
 });
-
-// const multerStorage = multer.memoryStorage();
-
-// const multerFilter = (req, file, cb) => {
-//   if (file.mimetype.startsWith("image")) {
-//     cb(null, true);
-//   } else {
-//     cb(new AppError("Not an image! Please upload only images.", 400), false);
-//   }
-// };
-
-// const upload = multer({
-//   storage: multerStorage,
-//   fileFilter: multerFilter,
-// });
-
-// exports.uploadCategoryImage = upload.single("image");
-
-// exports.resizeCategoryImage = catchAsync(async (req, res, next) => {
-//   console.log(req.body);
-//   console.log(req.file);
-
-//   if (!req.file) next();
-
-//   // req.file.filename = `category-${Date.now()}.jpeg`
-
-//   await sharp(req.file.buffer)
-//     .resize(500, 500)
-//     .toFormat("jpeg")
-//     .jpeg({ quality: 90 })
-//     .toFile(`public/img/categories/category-${Date.now()}.jpeg`);
-
-//   next();
-// });
-
-// const multerStorage = multer.memoryStorage();
-
-// const multerFilter = (req, file, cb) => {
-//   if (file.mimetype.startsWith("image")) {
-//     cb(null, true);
-//   } else {
-//     cb(new AppError("Not an image! Please upload only images.", 400), false);
-//   }
-// };
-
-// const upload = multer({
-//   storage: multerStorage,
-//   fileFilter: multerFilter,
-// });
-
-// exports.uploadCategoryImage = upload.single("image");
-
-// exports.resizeCategoryImage = catchAsync(async (req, res, next) => {
-//   // console.log(req.file);
-//   if (!req.file) return next();
-
-//   req.body.image = `category-${Date.now()}.jpeg`;
-
-//   await sharp(req.file.buffer)
-//     .resize(500, 500)
-//     .toFormat("jpeg")
-//     .jpeg({ quality: 90 })
-//     .toFile(`public/img/categories/${req.body.image}`);
-
-//   next();
-// });
 
 exports.getAllCategories = catchAsync(async (req, res) => {
   const categories = await Category.find();
   res.status(200).json({
     status: "success",
     results: categories.length,
-    data: { categories },
+    data: categories ,
   });
 });
 
@@ -94,7 +28,7 @@ exports.getCategory = catchAsync(async (req, res) => {
   const category = await Category.findById(req.params.id).populate("sections");
   res.status(200).json({
     status: "success",
-    data: { category },
+    data: category ,
   });
 });
 
@@ -102,7 +36,7 @@ exports.createCategory = catchAsync(async (req, res) => {
   const newCategory = await Category.create(req.body);
   res.status(201).json({
     status: "success",
-    data: { newCategory },
+    data: newCategory ,
   });
 });
 
@@ -121,8 +55,28 @@ exports.updateCategory = catchAsync(async (req, res) => {
   });
 });
 
-exports.deleteCategory = catchAsync(async (req, res) => {
-  await Category.findByIdAndDelete(req.params.id);
+// Get the image public_id from image url(cloudinary)
+const getPublicIdFromImageUrl = (imageUrl) => {
+  const urlParts = imageUrl.split("/");
+  const filename = urlParts[urlParts.length - 1];
+  const publicId = filename.split(".")[0];
+  return publicId;
+};
+
+exports.deleteCategory = catchAsync(async (req, res, next) => {
+  // Get category to be deleted
+  const cat = await Category.findById(req.params.id);
+  // Get image public_id
+  const public_id = getPublicIdFromImageUrl(cat.image);
+  // Delete image at cloudinary
+  await cloudinary.uploader.destroy(public_id);
+  // Delete category from database
+  const category = await Category.findByIdAndDelete(req.params.id);
+  if(!category){
+    return next(
+      new AppError(`No category found with that ID: ${req.params.id}`, 404)
+    );
+  }
   res.status(204).json({
     status: "success",
     data: null,

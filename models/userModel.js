@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "user",
   },
+  phone: Number,
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordExpiresAt: Date,
@@ -74,18 +75,18 @@ userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
   return false;
 };
 
-// userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
-//   if (this.passwordChangedAt) {
-//     // Add null check
-//     const changedTimeStamp = parseInt(
-//       this.passwordChangedAt.getTime() / 1000,
-//       10
-//     );
-//     return JWTTimeStamp < changedTimeStamp;
-//   }
+userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
+  if (this.passwordChangedAt) {
+    // Add null check
+    const changedTimeStamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    return JWTTimeStamp < changedTimeStamp;
+  }
 
-//   return false;
-// };
+  return false;
+};
 
 userSchema.methods.createPasswordResetToken = function () {
   // generate 32 byte token
@@ -96,7 +97,7 @@ userSchema.methods.createPasswordResetToken = function () {
     .update(resetToken)
     .digest("hex");
 
-  console.log({ resetToken }, this.passwordResetToken);
+  // console.log({ resetToken }, this.passwordResetToken);
 
   // password should expire in 10 mins
   this.passwordExpiresAt = Date.now() + 10 * 1000 * 60;
