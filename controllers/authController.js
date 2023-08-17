@@ -130,13 +130,22 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     "host"
   )}/api/v1/resetPassword/${resetToken}`;
 
-  const message = `Forgot your password? Submit a patched request with your new password and passwordConfirm to: ${resetURL}\n If you didn't forget please ignore this email.`;
+  // const message = `Forgot your password? Submit a patched request with your new password and passwordConfirm to: ${resetURL}\n If you didn't forget please ignore this email.`;
+
+  const html = `
+    <h1>Password reset token</h1>
+    <p>Forgot your password?</p>
+    <div>Hey, from double descent store, click the button below to request a new password</div>
+    <button><a href=${resetURL}>Forgot password</a></button>
+    <p>If you didn't request forget, please ignore this email.</p>
+  `
 
   try {
     await sendEmail({
       email: user.email,
       subject: "Your password reset token",
-      message,
+      // message,
+      html
     });
     res.status(200).json({
       status: "success",
@@ -172,7 +181,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   }
 
   user.password = req.body.password;
-  user.confirmPassword = req.body.conformPassword;
+  user.confirmPassword = req.body.confirmPassword;
   user.passwordResetToken = undefined;
   user.passwordExpiresAt = undefined;
   // Log in user, send JWT

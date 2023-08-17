@@ -1,4 +1,6 @@
 const Order = require("./../models/orderModel");
+// import sendEmail from "../utils/email";
+const sendMail = require("./../utils/email");
 
 exports.getAllOrder = async (req, res) => {
   const orders = await Order.findById(req.user.id);
@@ -18,38 +20,39 @@ const calculateTotalAmount = (items, deliveryFee) => {
 };
 
 const getEachProductAndQuantity = (items) => {
-  let product = [];
-  items.forEach((product) => {
+  const product = items.map((product) => {
     const { name, quantity } = product;
-    product.push({ name, quantity });
+    return {name, quantity}
   });
+  console.log(product);
   return product;
 };
 
-exports.createOrder = async (req, res) => {
+exports.createOrder = async (req, res, next) => {
   // Creating of order would be immediately after stripe payment is successful
   // The totalAmount would be calculated before it saves in the db from the incoming items
   // The product and quantity would also come from the array of items
   // user_id, address and phone number would be from the logged in user or
   // anyone that's inputted on the frontend sha
-  
+
   // And paymentId if stripe gives one
 
-  const { userId, address, phone, cartItems, deliveryFee } = req.body;
+  const { address, phone, cartItems, deliveryFee } = req.body;
 
   const totalAmount = calculateTotalAmount(cartItems, deliveryFee);
   const products = getEachProductAndQuantity(cartItems);
-  console.log(products);
+  console.log(products, req.user);
 
   const newOrder = await Order.create({
-    userId,
+    userId: req.user.id,
     address,
     phone,
     totalAmount,
     products,
   });
-  res.status(201).json({
-    status: "success",
-    body: newOrder,
-  });
+
+    res.status(201).json({
+      status: "success",
+      body: newOrder,
+    });
 };

@@ -19,7 +19,7 @@ const orderSchema = new mongoose.Schema({
   },
   products: [
     {
-      productName: {
+      name: {
         type: String,
         required: [true, "Product must have a name"],
       },
@@ -29,6 +29,10 @@ const orderSchema = new mongoose.Schema({
       },
     },
   ],
+  status:{
+    type:String,
+    default: "pending"
+  },
   date: {
     type: Date,
     default: Date.now(),
