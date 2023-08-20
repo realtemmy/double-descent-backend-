@@ -1,7 +1,7 @@
 const cloudinary = require("./../utils/cloudinary");
 const catchAsync = require("./../utils/catchAsync");
 const Category = require("./../models/categoryModel");
-const AppError = require('./../utils/appError');
+const AppError = require("./../utils/appError");
 
 // REmember to refactor this uploading of images to a single function in utils/cloudinary
 exports.uploadCategoryImage = catchAsync(async (req, res, next) => {
@@ -20,15 +20,17 @@ exports.getAllCategories = catchAsync(async (req, res) => {
   res.status(200).json({
     status: "success",
     results: categories.length,
-    data: categories ,
+    data: categories,
   });
 });
 
 exports.getCategory = catchAsync(async (req, res) => {
-  const category = await Category.findById(req.params.id).populate("sections");
+  const category = await Category.findById(req.params.id)
+    .populate("sections")
+    .populate("products");
   res.status(200).json({
     status: "success",
-    data: category ,
+    data: category,
   });
 });
 
@@ -36,7 +38,7 @@ exports.createCategory = catchAsync(async (req, res) => {
   const newCategory = await Category.create(req.body);
   res.status(201).json({
     status: "success",
-    data: newCategory ,
+    data: newCategory,
   });
 });
 
@@ -72,7 +74,7 @@ exports.deleteCategory = catchAsync(async (req, res, next) => {
   await cloudinary.uploader.destroy(public_id);
   // Delete category from database
   const category = await Category.findByIdAndDelete(req.params.id);
-  if(!category){
+  if (!category) {
     return next(
       new AppError(`No category found with that ID: ${req.params.id}`, 404)
     );

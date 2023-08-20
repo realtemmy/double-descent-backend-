@@ -13,6 +13,9 @@ app.use(cors());
 
 // Remember to delete public folder containing images
 
+// convert multer to cloudinary in user image upload
+// add limit also to the number of request sent per request in products, sections and category
+
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");

@@ -4,11 +4,12 @@ const AppError = require("./../utils/appError");
 const cloudinary = require("./../utils/cloudinary");
 
 exports.uploadProductImage = catchAsync(async (req, res, next) => {
+  // Should i add width and height, would thay affect the quality of the images?
   const imagePath = "./dev-data/images/cosmetics.jpg";
   const result = await cloudinary.uploader.upload(imagePath, {
     folder: "products",
-    width: 300,
-    height: 250,
+    // width: 300,
+    // height: 250,
   });
   // console.log(result.secure_url);
   req.body.image = result.secure_url;

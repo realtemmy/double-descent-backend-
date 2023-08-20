@@ -6,7 +6,7 @@ const router = express.Router();
 
 router
   .route("/")
-  .get(authController.protect, authController.restrictToAdmin, orderController.getAllOrder)
+  .get(authController.protect,  orderController.getAllUserOrder)
   .post(authController.protect, orderController.createOrder);
 
 module.exports = router

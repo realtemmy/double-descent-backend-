@@ -21,17 +21,21 @@ const orderSchema = new mongoose.Schema({
     {
       name: {
         type: String,
-        required: [true, "Product must have a name"],
+        required: [true, "Order product must have a name"],
       },
       quantity: {
         type: Number,
-        required: [true, "Product must have a quantity"],
+        required: [true, "Order product must have a quantity"],
+      },
+      image: {
+        type: String,
+        required: [true, "Order product must have an image"],
       },
     },
   ],
-  status:{
-    type:String,
-    default: "pending"
+  status: {
+    type: String,
+    default: "pending",
   },
   date: {
     type: Date,

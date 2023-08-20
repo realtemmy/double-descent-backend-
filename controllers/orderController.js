@@ -2,7 +2,7 @@ const Order = require("./../models/orderModel");
 // import sendEmail from "../utils/email";
 const sendMail = require("./../utils/email");
 
-exports.getAllOrder = async (req, res) => {
+exports.getAllUserOrder = async (req, res) => {
   const orders = await Order.findById(req.user.id);
   res.status(200).json({
     status: "success",
@@ -21,8 +21,8 @@ const calculateTotalAmount = (items, deliveryFee) => {
 
 const getEachProductAndQuantity = (items) => {
   const product = items.map((product) => {
-    const { name, quantity } = product;
-    return {name, quantity}
+    const { name, quantity, image } = product;
+    return {name, quantity, image}
   });
   console.log(product);
   return product;

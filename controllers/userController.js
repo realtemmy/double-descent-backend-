@@ -4,6 +4,7 @@ const sharp = require("sharp");
 const catchAsync = require("./../utils/catchAsync");
 const User = require("./../models/userModel");
 const AppError = require("./../utils/appError");
+const cloudinary = require("./../utils/cloudinary");
 
 const multerStorage = multer.memoryStorage();
 
@@ -22,16 +23,29 @@ const upload = multer({
 
 exports.uploadUserPhoto = upload.single("photo");
 
-exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
-  if (!req.file) return next();
-  
-  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
-  await sharp(req.file.buffer)
-    .resize(500, 500)
-    .toFormat("jpeg")
-    .jpeg({ quality: 90 })
-    .toFile(`public/img/users/${req.file.filename}`);
-  next();
+// exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
+//   if (!req.file) return next();
+
+//   req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+//   await sharp(req.file.buffer)
+//     .resize(500, 500)
+//     .toFormat("jpeg")
+//     .jpeg({ quality: 90 })
+//     .toFile(`public/img/users/${req.file.filename}`);
+//   next();
+// });
+
+exports.uploadUserToCloudinary = catchAsync(async (req, res, next) => {
+  if(!req.file) return next()
+  const b64 = Buffer.from(req.file.buffer).toString("base64");
+  console.log("b64: ", b64);
+  let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+  const cldRes = await cloudinary.uploader.upload(dataURI, {
+    folder:"user"
+  });
+  console.log(cldRes.secure_url);
+  req.body.photo = cldRes.secure_url;
+  next()
 });
 
 const filterObj = (obj, ...allowedFields) => {
@@ -76,6 +90,7 @@ exports.getUser = catchAsync(async (req, res, next) => {
 });
 
 exports.updateMe = catchAsync(async (req, res, next) => {
+  console.log(req.file);
   if (req.body.password || req.body.confirmPassword) {
     return next(
       new AppError(
@@ -87,8 +102,9 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   const filteredBody = filterObj(req.body, "name", "email", "phone");
   req.body.phone = parseInt(req.body.phone);
-  if(req.body.phone === NaN){
+  if (req.body.phone === NaN) {
     req.body.phone === undefined;
+    // throw error ?
   }
   if (req.file) filteredBody.photo = req.file.filename;
 
