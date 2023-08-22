@@ -8,6 +8,7 @@ exports.uploadProductImage = catchAsync(async (req, res, next) => {
   const imagePath = "./dev-data/images/cosmetics.jpg";
   const result = await cloudinary.uploader.upload(imagePath, {
     folder: "products",
+    // Omo the image gats be like 1200/1000
     // width: 300,
     // height: 250,
   });
@@ -23,19 +24,35 @@ exports.getFeaturedProducts = catchAsync(async (req, res) => {
   res.status(200).json({
     status: "success",
     results: featuredProducts.length,
-    data: featuredProducts ,
+    data: featuredProducts,
   });
 });
 
+// How to implement search
+// const search = Product.find({
+//   name: req.params.searchValue,
+//   brand: req.params.searchValue,
+// });
+// Do this in both sections and categories...maybe id create a different middleware for search sha
+
 exports.getAllProducts = catchAsync(async (req, res, next) => {
+  // Pagination
+  // localhost:5000/api/v1/products/:page(1)
+  console.log(req.params);
+  const limit = 10;
+  const page = req.params.page * 1 || 1;
+  const skip = (page - 1) * limit;
+  console.log("page: ", page);
+  console.log("skip: ", skip);
+
   let filter = {};
   // if (req.params.categoryId) filter = { category: req.params.categoryId };
-  const products = await Product.find(filter);
+  const products = await Product.find(filter).limit(limit).skip(skip);
 
   res.status(200).json({
     status: "success",
     results: products.length,
-    data: products ,
+    data: products,
   });
 });
 
@@ -48,7 +65,7 @@ exports.getProduct = catchAsync(async (req, res, next) => {
   }
   res.status(200).json({
     status: "success",
-    data: product ,
+    data: product,
   });
 });
 
@@ -57,7 +74,7 @@ exports.createProduct = catchAsync(async (req, res, next) => {
   const newProduct = await Product.create(req.body);
   res.status(201).json({
     status: "success",
-    data: newProduct ,
+    data: newProduct,
   });
 });
 
@@ -75,7 +92,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    data: product ,
+    data: product,
   });
 });
 
@@ -92,7 +109,7 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
   const prod = await Product.findById(req.params.id);
   const public_id = getPublicIdFromImageUrl(prod.image);
   // Delete product from cloudinary
-  await cloudinary.uploader.destroy(public_id)
+  await cloudinary.uploader.destroy(public_id);
   // Delete product from database
   const product = await Product.findByIdAndDelete(req.params.id);
   if (!product) {

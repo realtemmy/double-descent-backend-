@@ -7,13 +7,11 @@ const router = express.Router({ mergeParams: true });
 // change restrictTo to restrictToAdmin
 
 router
-  .route("/")
+  .route("/:page")
   .get(productController.getAllProducts)
   .post(
     authController.protect,
     authController.restrictToAdmin,
-    // productController.uploadProductImage,
-    // productController.resizeProductImage,
     productController.uploadProductImage,
     productController.createProduct
   );
@@ -27,7 +25,6 @@ router
     authController.protect,
     authController.restrictToAdmin,
     // productController.uploadProductImage,
-    // productController.resizeProductImage,
     productController.updateProduct
   )
   .delete(

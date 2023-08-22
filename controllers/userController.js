@@ -23,29 +23,29 @@ const upload = multer({
 
 exports.uploadUserPhoto = upload.single("photo");
 
-// exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
-//   if (!req.file) return next();
-
-//   req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
-//   await sharp(req.file.buffer)
-//     .resize(500, 500)
-//     .toFormat("jpeg")
-//     .jpeg({ quality: 90 })
-//     .toFile(`public/img/users/${req.file.filename}`);
-//   next();
-// });
-
 exports.uploadUserToCloudinary = catchAsync(async (req, res, next) => {
-  if(!req.file) return next()
+  // console.log("line 39", req.body);
+  console.log("Upload started");
+
+  if (!req.file) return next(new AppError("No file uploaded", 400));
   const b64 = Buffer.from(req.file.buffer).toString("base64");
-  console.log("b64: ", b64);
   let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
   const cldRes = await cloudinary.uploader.upload(dataURI, {
-    folder:"user"
+    folder: "user",
+    width: 400,
+    height: 400,
   });
   console.log(cldRes.secure_url);
   req.body.photo = cldRes.secure_url;
-  next()
+  console.log(req.body);
+  const updatedUserImage = await User.findByIdAndUpdate(req.user.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+  res.status(200).json({
+    status: "success",
+    data: updatedUserImage,
+  });
 });
 
 const filterObj = (obj, ...allowedFields) => {

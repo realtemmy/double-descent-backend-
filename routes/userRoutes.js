@@ -20,10 +20,17 @@ router.patch(
 router.patch(
   "/updateMe",
   authController.protect,
-  userControllers.uploadUserPhoto,
-  userControllers.uploadUserToCloudinary,
+  // userControllers.uploadUserPhoto,
+  // userControllers.uploadUserToCloudinary,
   // userControllers.resizeUserPhoto,
   userControllers.updateMe
+);
+
+router.patch(
+  "/upload-user-image",
+  authController.protect,
+  userControllers.uploadUserPhoto,
+  userControllers.uploadUserToCloudinary
 );
 
 router
