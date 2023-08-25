@@ -18,6 +18,10 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: [true, "product must have an image"],
   },
+  brand: {
+    type: String,
+    required: [true, "product must have a brand"]
+  },
   description: {
     type: String,
     required: [true, "a product must have description"],
