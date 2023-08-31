@@ -1,6 +1,5 @@
 const slugify = require("slugify");
 const mongoose = require("mongoose");
-const Section = require("./sectionModel");
 
 const categorySchema = new mongoose.Schema(
   {
@@ -14,6 +13,10 @@ const categorySchema = new mongoose.Schema(
       required: [true, "a category must have an image"],
     },
     slug: String,
+    createdAt: {
+      type: Date,
+      default: Date.now(),
+    }
   },
   {
     toJSON: { virtuals: true },

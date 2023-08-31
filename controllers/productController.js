@@ -38,12 +38,12 @@ exports.getFeaturedProducts = catchAsync(async (req, res) => {
 exports.getAllProducts = catchAsync(async (req, res, next) => {
   // Pagination
   // localhost:5000/api/v1/products/:page(1)
-  console.log(req.params);
+  // console.log(req.params);
   const limit = 10;
   const page = req.params.page * 1 || 1;
   const skip = (page - 1) * limit;
-  console.log("page: ", page);
-  console.log("skip: ", skip);
+  // console.log("page: ", page);
+  // console.log("skip: ", skip);
 
   let filter = {};
   // if (req.params.categoryId) filter = { category: req.params.categoryId };

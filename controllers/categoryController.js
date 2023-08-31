@@ -68,17 +68,18 @@ const getPublicIdFromImageUrl = (imageUrl) => {
 exports.deleteCategory = catchAsync(async (req, res, next) => {
   // Get category to be deleted
   const cat = await Category.findById(req.params.id);
+  if (!cat) {
+    return next(
+      new AppError(`No category found with that ID: ${req.params.id}`, 404)
+    );
+  }
   // Get image public_id
   const public_id = getPublicIdFromImageUrl(cat.image);
   // Delete image at cloudinary
   await cloudinary.uploader.destroy(public_id);
   // Delete category from database
-  const category = await Category.findByIdAndDelete(req.params.id);
-  if (!category) {
-    return next(
-      new AppError(`No category found with that ID: ${req.params.id}`, 404)
-    );
-  }
+  await Category.findByIdAndDelete(req.params.id);
+
   res.status(204).json({
     status: "success",
     data: null,
