@@ -6,7 +6,7 @@ const Product = require("../models/productModel");
 exports.getAllSections = catchAsync(async (req, res) => {
   // Get all sections = getting all sections on a particular category if request is made to
   // the format:  /api/v1/category/:categoryId/section
-  const filter = {};
+  let filter = {};
   if (req.params.categoryId) filter = { category: req.params.categoryId };
   const sections = await Section.find(filter);
   res.status(200).json({

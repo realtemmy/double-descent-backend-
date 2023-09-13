@@ -32,16 +32,14 @@ const userSchema = new mongoose.Schema({
       message: "Passwords are not the same!",
     },
   },
-  photo: {
-    type: String,
-    default: "default.jpg",
-  },
+  photo: String,
   role: {
     // if u later change to isAdmin format, remamber to change in restrict middleware at authcontroller
     type: String,
     default: "user",
   },
   phone: Number,
+  address: String,
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordExpiresAt: Date,
@@ -69,19 +67,6 @@ userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
       this.passwordChangedAt.getTime() / 1000,
       10
     );
-    return JWTTimestamps < changedTimeStamp;
-  }
-
-  return false;
-};
-
-userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
-  if (this.passwordChangedAt) {
-    // Add null check
-    const changedTimeStamp = parseInt(
-      this.passwordChangedAt.getTime() / 1000,
-      10
-    );
     return JWTTimeStamp < changedTimeStamp;
   }
 
@@ -96,8 +81,6 @@ userSchema.methods.createPasswordResetToken = function () {
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
-
-  // console.log({ resetToken }, this.passwordResetToken);
 
   // password should expire in 10 mins
   this.passwordExpiresAt = Date.now() + 10 * 1000 * 60;

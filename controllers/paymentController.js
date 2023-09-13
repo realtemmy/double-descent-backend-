@@ -17,10 +17,6 @@ exports.createPaymentIntent = catchAsync(async (req, res) => {
   const { cartItems, deliveryFee, address, phone, email, user_id } = req.body;
   // Reveives the whole item as an array, the user_id,
   // name, email address, and delivery fee
-  // create a function for calculating totalAmount
-  // console.log(req);
-  console.log("line 22:", calculateTotalAmount(cartItems, deliveryFee) * 100);
-  // const { totalAmount } = req.body;
   const paymentIntent = await stripe.paymentIntents.create({
     amount: calculateTotalAmount(cartItems, deliveryFee),
     currency: "NGN",
@@ -28,7 +24,6 @@ exports.createPaymentIntent = catchAsync(async (req, res) => {
     customer: user_id,
     receipt_email: email,
   });
-  // console.log(paymentIntent.client_secret);
 
   res.status(200).json({
     status: "success",

@@ -1,6 +1,6 @@
 /* eslint-disable import/no-useless-path-segments */
 const multer = require("multer");
-const sharp = require("sharp");
+// const sharp = require("sharp");
 const catchAsync = require("./../utils/catchAsync");
 const User = require("./../models/userModel");
 const AppError = require("./../utils/appError");
@@ -24,9 +24,6 @@ const upload = multer({
 exports.uploadUserPhoto = upload.single("photo");
 
 exports.uploadUserToCloudinary = catchAsync(async (req, res, next) => {
-  // console.log("line 39", req.body);
-  console.log("Upload started");
-
   if (!req.file) return next(new AppError("No file uploaded", 400));
   const b64 = Buffer.from(req.file.buffer).toString("base64");
   let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
@@ -35,9 +32,7 @@ exports.uploadUserToCloudinary = catchAsync(async (req, res, next) => {
     width: 400,
     height: 400,
   });
-  console.log(cldRes.secure_url);
   req.body.photo = cldRes.secure_url;
-  console.log(req.body);
   const updatedUserImage = await User.findByIdAndUpdate(req.user.id, req.body, {
     new: true,
     runValidators: true,
@@ -78,7 +73,6 @@ exports.getMe = catchAsync(async (req, res, next) => {
 });
 
 exports.getUser = catchAsync(async (req, res, next) => {
-  console.log(req.params.id);
   const user = await User.findById(req.params.id);
   if (!user) {
     return next(new AppError("No user found with that ID", 404));
@@ -90,7 +84,6 @@ exports.getUser = catchAsync(async (req, res, next) => {
 });
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  console.log(req.file);
   if (req.body.password || req.body.confirmPassword) {
     return next(
       new AppError(
@@ -100,7 +93,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     );
   }
 
-  const filteredBody = filterObj(req.body, "name", "email", "phone");
+  const filteredBody = filterObj(req.body, "name", "email", "phone", "address");
   req.body.phone = parseInt(req.body.phone);
   if (req.body.phone === NaN) {
     req.body.phone === undefined;

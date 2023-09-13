@@ -1,6 +1,8 @@
 const cloudinary = require("./../utils/cloudinary");
 const catchAsync = require("./../utils/catchAsync");
 const Category = require("./../models/categoryModel");
+const Section = require("./../models/sectionModel");
+const Product = require("./../models/productModel");
 const AppError = require("./../utils/appError");
 
 // REmember to refactor this uploading of images to a single function in utils/cloudinary
@@ -77,6 +79,20 @@ exports.deleteCategory = catchAsync(async (req, res, next) => {
   const public_id = getPublicIdFromImageUrl(cat.image);
   // Delete image at cloudinary
   await cloudinary.uploader.destroy(public_id);
+
+  // Delete sections
+  await Promise.all(
+    cat.sections.map(async (category) => {
+      await Section.findByIdAndDelete(category._id);
+    })
+  );
+
+  // Delete products
+  await Promise.all(
+    cat.products.map(async (category) => {
+      await Product.findByIdAndDelete(category._id);
+    })
+  );
   // Delete category from database
   await Category.findByIdAndDelete(req.params.id);
 

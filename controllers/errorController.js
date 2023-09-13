@@ -9,6 +9,7 @@ const handleCastErrorDB = (err) => {
 };
 
 const sendErrorDev = (err, res) => {
+  console.log("Error: ", err);
   res.status(err.statusCode).json({
     status: err.status,
     error: err,
@@ -19,6 +20,7 @@ const sendErrorDev = (err, res) => {
 
 const sendErrorProd = (err, res) => {
   // Trusted error I've accounted for
+  console.log("Error: ", err);
   if (err.isOperational) {
     res.status(err.statusCode).json({
       status: err.status,

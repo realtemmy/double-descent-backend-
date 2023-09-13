@@ -5,6 +5,7 @@ const orderSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: "User",
   },
+  customerId: String,
   address: {
     type: String,
     required: [true, "Order must have an address for delivery"],
@@ -31,13 +32,21 @@ const orderSchema = new mongoose.Schema({
         type: String,
         required: [true, "Order product must have an image"],
       },
+      price: {
+        type: Number,
+        required: [true, "Order product must have a price"],
+      },
+      productId: {
+        type: String,
+        required: [true, "Order product must have Id"],
+      },
     },
   ],
   status: {
     type: String,
-    default: "pending",
+    default: "paid",
   },
-  date: {
+  createdAt: {
     type: Date,
     default: Date.now(),
   },

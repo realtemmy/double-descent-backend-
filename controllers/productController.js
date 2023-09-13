@@ -1,26 +1,44 @@
+const multer = require("multer");
 const Product = require("./../models/productModel");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const cloudinary = require("./../utils/cloudinary");
 
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new AppError("Not an image! Please upload only images.", 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+exports.uploadProductPhoto = upload.single('image');
+
 exports.uploadProductImage = catchAsync(async (req, res, next) => {
-  // Should i add width and height, would thay affect the quality of the images?
-  const imagePath = "./dev-data/images/cosmetics.jpg";
-  const result = await cloudinary.uploader.upload(imagePath, {
+  if(!req.file){
+    return next(new AppError("No file uploaded", 400));
+  }
+  const b64 = Buffer.from(req.file.buffer).toString("base64");
+  let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+  const result = await cloudinary.uploader.upload(dataURI, {
     folder: "products",
     // Omo the image gats be like 1200/1000
-    // width: 300,
-    // height: 250,
+    width: 1000,
+    height: 1200,
   });
-  // console.log(result.secure_url);
   req.body.image = result.secure_url;
   next();
 });
 
 exports.getFeaturedProducts = catchAsync(async (req, res) => {
   const featuredProducts = await Product.find({ isFeatured: true });
-
-  // console.log(featuredProducts);
   res.status(200).json({
     status: "success",
     results: featuredProducts.length,
@@ -28,22 +46,12 @@ exports.getFeaturedProducts = catchAsync(async (req, res) => {
   });
 });
 
-// How to implement search
-// const search = Product.find({
-//   name: req.params.searchValue,
-//   brand: req.params.searchValue,
-// });
-// Do this in both sections and categories...maybe id create a different middleware for search sha
-
 exports.getAllProducts = catchAsync(async (req, res, next) => {
   // Pagination
   // localhost:5000/api/v1/products/:page(1)
-  // console.log(req.params);
-  const limit = 10;
+  const limit = 20;
   const page = req.params.page * 1 || 1;
   const skip = (page - 1) * limit;
-  // console.log("page: ", page);
-  // console.log("skip: ", skip);
 
   let filter = {};
   // if (req.params.categoryId) filter = { category: req.params.categoryId };

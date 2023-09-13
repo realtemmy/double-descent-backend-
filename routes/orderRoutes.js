@@ -6,7 +6,11 @@ const router = express.Router();
 
 router
   .route("/")
-  .get(authController.protect,  orderController.getAllUserOrder)
-  .post(authController.protect, orderController.createOrder);
+  .get(authController.protect, orderController.getAllUserOrder)
+  // .post(authController.protect, orderController.createOrder);
 
-module.exports = router
+router
+  .route("/checkout")
+  .post(authController.protect, orderController.getCheckoutSession);
+
+module.exports = router;
