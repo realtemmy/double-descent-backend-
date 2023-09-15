@@ -11,7 +11,9 @@ process.on("uncaughtException", (err) => {
 const app = require("./app");
 dotenv.config({ path: "./config.env" });
 
-const DB = process.env.DATABASE_LOCAL;
+// const DB = process.env.DATABASE_LOCAL;
+const DB = process.env.DATABASE;
+
 
 mongoose.set("strictQuery", false);
 

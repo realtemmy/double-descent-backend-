@@ -1,3 +1,4 @@
+const multer = require("multer");
 const cloudinary = require("./../utils/cloudinary");
 const catchAsync = require("./../utils/catchAsync");
 const Category = require("./../models/categoryModel");
@@ -6,9 +7,33 @@ const Product = require("./../models/productModel");
 const AppError = require("./../utils/appError");
 
 // REmember to refactor this uploading of images to a single function in utils/cloudinary
+
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new AppError("Not an image! Please upload only images.", 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+exports.uploadCategoryPhoto = upload.single("image");
+
 exports.uploadCategoryImage = catchAsync(async (req, res, next) => {
-  const imagePath = "./dev-data/images/weave-on.jpg";
-  const result = await cloudinary.uploader.upload(imagePath, {
+  console.log("File", req.file);
+  console.log("Body: ", req.body);
+  if (!req.file) {
+    return next(new AppError("No file uploaded", 400));
+  }
+  const b64 = Buffer.from(req.file.buffer).toString("base64");
+  let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+  const result = await cloudinary.uploader.upload(dataURI, {
     folder: "category",
     width: 100,
     height: 100,

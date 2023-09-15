@@ -16,8 +16,7 @@ router
   .post(
     authController.protect,
     authController.restrictToAdmin,
-    // categoryController.uploadCategoryImage,
-    // categoryController.resizeCategoryImage,
+    categoryController.uploadCategoryPhoto,
     categoryController.uploadCategoryImage,
     categoryController.createCategory
   );
@@ -30,6 +29,7 @@ router
     authController.restrictToAdmin,
     // categoryController.uploadCategoryImage,
     // categoryController.resizeCategoryImage,
+    categoryController.uploadCategoryImage,
     categoryController.updateCategory
   )
   .delete(

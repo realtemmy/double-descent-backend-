@@ -21,9 +21,7 @@ const categorySchema = new mongoose.Schema(
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  },{
-    bufferCommands: false
-  }
+  },
 );
 
 categorySchema.virtual("sections", {
