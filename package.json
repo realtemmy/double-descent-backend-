@@ -36,7 +36,7 @@
     "eslint-plugin-import": "^2.27.5"
   },
   "engines": {
-    "node": "12.13.x"
+    "node": ">=10.0.0"
   },
   "repository": {
     "type": "git",
