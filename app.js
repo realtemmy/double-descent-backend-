@@ -47,6 +47,20 @@ app.post(
   }
 );
 
+
+app.use(express.json());
+
+// app.use(express.static("public"));
+const corsOpts = {
+  origin: "*",
+  credentials: true,
+  methods: ["GET", "POST", "HEAD", "PUT", "PATCH", "DELETE"],
+  allowedHeaders: ["Content-Type"],
+  exposedHeaders: ["Content-Type"],
+};
+app.use(cors(corsOpts));
+app.use(compression())
+
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -59,12 +73,6 @@ app.use((req, res, next) => {
   }
   next();
 });
-
-app.use(express.json());
-
-// app.use(express.static("public"));
-app.use(cors());
-app.use(compression())
 
 // Remember to delete public folder containing images
 
