@@ -52,7 +52,7 @@ app.use(express.json());
 
 // app.use(express.static("public"));
 const corsOpts = {
-  origin: "*",
+  origin: "https://main--doubledecent.netlify.app/",
   credentials: true,
   methods: ["GET", "POST", "HEAD", "PUT", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type"],
