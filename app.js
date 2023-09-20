@@ -49,16 +49,7 @@ app.post(
 
 
 app.use(express.json());
-
-// app.use(express.static("public"));
-const corsOpts = {
-  origin: "https://main--doubledecent.netlify.app/",
-  credentials: true,
-  methods: ["GET", "POST", "HEAD", "PUT", "PATCH", "DELETE"],
-  allowedHeaders: ["Content-Type"],
-  exposedHeaders: ["Content-Type"],
-};
-app.use(cors(corsOpts));
+app.use(cors());
 app.use(compression())
 
 // Remember to delete public folder containing images
