@@ -47,6 +47,10 @@ app.post(
   }
 );
 
+
+app.use(express.json());
+
+// app.use(express.static("public"));
 const corsOpts = {
   origin: "https://main--doubledecent.netlify.app/",
   credentials: true,
@@ -55,30 +59,8 @@ const corsOpts = {
   exposedHeaders: ["Content-Type"],
 };
 app.use(cors(corsOpts));
-
-app.use(express.json());
-
-// app.use(express.static("public"));
-
-
-
-app.use((req, res, next) => {
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    "https://main--doubledecent.netlify.app/"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "OPTIONS, GET, POST, PUT, PATCH, DELETE"
-  );
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-  next();
-});
-
 app.use(compression())
+
 // Remember to delete public folder containing images
 
 // convert multer to cloudinary in user image upload
