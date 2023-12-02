@@ -3,6 +3,7 @@ const Product = require("./../models/productModel");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const cloudinary = require("./../utils/cloudinary");
+// const APIFeatures = require('./../utils/apiFeatures');
 
 const multerStorage = multer.memoryStorage();
 
@@ -19,10 +20,10 @@ const upload = multer({
   fileFilter: multerFilter,
 });
 
-exports.uploadProductPhoto = upload.single('image');
+exports.uploadProductPhoto = upload.single("image");
 
 exports.uploadProductImage = catchAsync(async (req, res, next) => {
-  if(!req.file){
+  if (!req.file) {
     return next(new AppError("No file uploaded", 400));
   }
   const b64 = Buffer.from(req.file.buffer).toString("base64");
@@ -53,9 +54,8 @@ exports.getAllProducts = catchAsync(async (req, res, next) => {
   const page = req.params.page * 1 || 1;
   const skip = (page - 1) * limit;
 
-  let filter = {};
   // if (req.params.categoryId) filter = { category: req.params.categoryId };
-  const products = await Product.find(filter).limit(limit).skip(skip);
+  const products = await Product.find().limit(limit).skip(skip);
 
   res.status(200).json({
     status: "success",
@@ -77,7 +77,7 @@ exports.getProduct = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createProduct = catchAsync(async (req, res, next) => {
+exports.createProduct = catchAsync(async (req, res) => {
   if (!req.body.category) req.body.category = req.params.categoryId;
   const newProduct = await Product.create(req.body);
   res.status(201).json({

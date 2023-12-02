@@ -4,10 +4,16 @@ const authController = require("./../controllers/authController");
 
 const router = express.Router();
 
+router.route("/").get(authController.protect, orderController.getAllOrders);
+
 router
-  .route("/")
-  .get(authController.protect, orderController.getAllUserOrder)
-  // .post(authController.protect, orderController.createOrder);
+  .route("/user")
+  .get(authController.protect, orderController.getAllUserOrder);
+
+router
+  .route("/user/:id")
+  .get(orderController.getOrder)
+  .patch(authController.protect, orderController.confirmOrder);
 
 router
   .route("/checkout")

@@ -27,8 +27,6 @@ router
   .patch(
     authController.protect,
     authController.restrictToAdmin,
-    // categoryController.uploadCategoryImage,
-    // categoryController.resizeCategoryImage,
     categoryController.uploadCategoryImage,
     categoryController.updateCategory
   )

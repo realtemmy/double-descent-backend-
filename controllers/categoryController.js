@@ -94,7 +94,11 @@ const getPublicIdFromImageUrl = (imageUrl) => {
 
 exports.deleteCategory = catchAsync(async (req, res, next) => {
   // Get category to be deleted
-  const cat = await Category.findById(req.params.id);
+  // console.log("getting here");
+
+  const cat = await Category.findById(req.params.id)
+    .populate("sections")
+    .populate("products");
   if (!cat) {
     return next(
       new AppError(`No category found with that ID: ${req.params.id}`, 404)
@@ -111,7 +115,6 @@ exports.deleteCategory = catchAsync(async (req, res, next) => {
       await Section.findByIdAndDelete(category._id);
     })
   );
-
   // Delete products
   await Promise.all(
     cat.products.map(async (category) => {

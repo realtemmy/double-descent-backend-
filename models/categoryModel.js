@@ -35,6 +35,8 @@ categorySchema.virtual("products", {
   foreignField: "category",
   localField: "_id",
 });
+
+
 categorySchema.pre("save", function (next) {
   this.slug = slugify(this.name, {
     lower: true,

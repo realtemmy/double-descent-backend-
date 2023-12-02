@@ -16,7 +16,7 @@ const handleDuplicateError = (err) => {
 };
 
 const sendErrorDev = (err, res) => {
-  console.log("Error: ", err);
+  // console.log("Error: ", err);
   res.status(err.statusCode).json({
     status: err.status,
     error: err,
@@ -48,7 +48,7 @@ const handleExpiredJWTError = () =>
   new AppError("Your session has expired! Please log in again.", 401);
 
 module.exports = (err, req, res, next) => {
-  console.log("All err: ", err.message);
+  // console.log("All err: ", err.message);
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
 

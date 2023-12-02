@@ -6,7 +6,6 @@ const User = require("./../models/userModel");
 const AppError = require("./../utils/appError");
 const catchAsync = require("./../utils/catchAsync");
 const sendEmail = require(".././utils/email");
-const { log } = require("console");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -181,7 +180,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     <p>Forgot your password?</p>
     <div>Hey, from double descent store, click the button below to request a new password</div>
     <button><a href=${resetURL}>Forgot password</a></button>
-    <p>If you didn't request forget, please ignore this email.</p>
+    <p>If you didn't request forget  password, please ignore this email.</p>
   `;
 
   try {

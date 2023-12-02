@@ -35,7 +35,7 @@ app.post(
         const checkoutSessionCompleted = event.data.object;
         // Then define and call a function to handle the event checkout.session.completed
         orderController.handleOrderCheckOut(checkoutSessionCompleted);
-        
+
         break;
       // ... handle other event types
       default:
@@ -47,10 +47,9 @@ app.post(
   }
 );
 
-
+app.use(cors({ origin: "*" }));
 app.use(express.json());
-app.use(cors());
-app.use(compression())
+app.use(compression());
 
 // Remember to delete public folder containing images
 
