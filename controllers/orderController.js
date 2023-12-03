@@ -6,12 +6,14 @@ const catchAsync = require("../utils/catchAsync");
 const Order = require("./../models/orderModel");
 const User = require("./../models/userModel");
 const sendEmail = require("./../utils/email");
+const APIFeatures = require("./../utils/apiFeatures");
 
 exports.getAllOrders = catchAsync(async (req, res) => {
   // console.log(req.query);
   let filter = {};
   if (req.query.type) filter = { status: req.query.type };
-  const orders = await Order.find(filter);
+  const features = new APIFeatures(Order.find(filter), req.query).paginate();
+  const orders = await features.query;
 
   res.status(200).json({
     status: "success",
@@ -190,7 +192,7 @@ exports.getCheckoutSession = catchAsync(async (req, res) => {
     mode: "payment",
     currency: "NGN",
     customer: customer.id,
-    success_url: "http://localhost:3000",
+    success_url: "http://localhost:3000/checkout-success", //maybe add a query status for true?
     cancel_url: "http://localhost:3000/cart",
   });
 

@@ -51,11 +51,8 @@ app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(compression());
 
-// Remember to delete public folder containing images
-
-// convert multer to cloudinary in user image upload
-// add limit also to the number of request sent per request in products, sections and category
 // Search route
+// change order userId schema to user and change where its been used too..populate in the schema
 
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");

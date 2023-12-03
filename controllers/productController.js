@@ -3,7 +3,7 @@ const Product = require("./../models/productModel");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const cloudinary = require("./../utils/cloudinary");
-// const APIFeatures = require('./../utils/apiFeatures');
+const APIFeatures = require("./../utils/apiFeatures");
 
 const multerStorage = multer.memoryStorage();
 
@@ -48,15 +48,8 @@ exports.getFeaturedProducts = catchAsync(async (req, res) => {
 });
 
 exports.getAllProducts = catchAsync(async (req, res, next) => {
-  // Pagination
-  // localhost:5000/api/v1/products/:page(1)
-  const limit = 20;
-  const page = req.params.page * 1 || 1;
-  const skip = (page - 1) * limit;
-
-  // if (req.params.categoryId) filter = { category: req.params.categoryId };
-  const products = await Product.find().limit(limit).skip(skip);
-
+  const features = new APIFeatures(Product.find(), req.query).paginate();
+  const products = await features.query;
   res.status(200).json({
     status: "success",
     results: products.length,

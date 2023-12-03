@@ -2,13 +2,15 @@ const Section = require("./../models/sectionModel");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const Product = require("../models/productModel");
+const APIFeatures = require("./../utils/apiFeatures");
 
 exports.getAllSections = catchAsync(async (req, res) => {
   // Get all sections = getting all sections on a particular category if request is made to
   // the format:  /api/v1/category/:categoryId/section
   let filter = {};
   if (req.params.categoryId) filter = { category: req.params.categoryId };
-  const sections = await Section.find(filter);
+  const features = new APIFeatures(Section.find(filter), req.query).paginate();
+  const sections = await features.query;
   res.status(200).json({
     status: "success",
     results: sections.length,
