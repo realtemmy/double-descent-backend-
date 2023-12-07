@@ -38,7 +38,6 @@ exports.getUserOrder = catchAsync(async (req, res) => {
   });
 });
 
-
 // exports.getOrderType = catchAsync(async (req, res) => {
 //   // get type
 //   console.log(req.params.type);
@@ -72,14 +71,14 @@ exports.confirmOrder = catchAsync(async (req, res) => {
   });
   const order = await Order.findById(req.params.id);
   // console.log("Order :", order);
-  const user = await User.findById(order.userId);
+  // const user = await User.findById(order.userId);
   // console.log("User: ", user);
   const html = `
     <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
     <div
         style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);">
         <h1 style="color: #333;">Order Confirmation</h1>
-        <p style="color: #666;">Dear ${user.name},</p>
+        <p style="color: #666;">Dear ${order.userId.name},</p>
         <p style="color: #666;">Your order for ${order.products
           .map((product) => product.name)
           .join(", ")} has been successfully placed.</p>
@@ -96,7 +95,7 @@ exports.confirmOrder = catchAsync(async (req, res) => {
   // needing user's email and the orderID
   try {
     await sendEmail({
-      email: user.email,
+      email: order.user.email,
       subject: `Order confirmation - ${order._id}`,
       // message,
       html,
@@ -114,8 +113,7 @@ exports.confirmOrder = catchAsync(async (req, res) => {
 
 exports.handleOrderCheckOut = catchAsync(async (checkoutSession) => {
   const stripeRes = await stripe.customers.retrieve(checkoutSession.customer);
-
-  console.log("Handle order checkout: ", checkoutSession, stripeRes);
+  // console.log(stripe);
 
   const session = await stripe.checkout.sessions.retrieve(checkoutSession.id, {
     expand: ["line_items"],
@@ -128,8 +126,8 @@ exports.handleOrderCheckOut = catchAsync(async (checkoutSession) => {
     productsIds.map(async (id) => await stripe.products.retrieve(id))
   );
   // create order product
-  await Order.create({
-    userId: stripeRes.metadata.userId,
+  const newOrder = await Order.create({
+    user: stripeRes.metadata.userId,
     customerId: stripeRes.id,
     address: stripeRes.metadata.address,
     phone: stripeRes.metadata.phone,
@@ -142,7 +140,8 @@ exports.handleOrderCheckOut = catchAsync(async (checkoutSession) => {
       price: session.line_items.data[idx].price.unit_amount / 100,
     })),
   });
-  // how do i send success message to frontend??
+
+  return newOrder;
 });
 
 exports.getCheckoutSession = catchAsync(async (req, res) => {
@@ -180,7 +179,9 @@ exports.getCheckoutSession = catchAsync(async (req, res) => {
       unit_amount: deliveryFee * 100,
       product_data: {
         name: "delivery fee",
-        images: [], // Provide an image URL or an empty array
+        images: [
+          "https://c8.alamy.com/comp/J27BPE/motorcycle-delivery-vehicle-icon-J27BPE.jpg",
+        ],
       },
     },
   });
@@ -192,7 +193,7 @@ exports.getCheckoutSession = catchAsync(async (req, res) => {
     mode: "payment",
     currency: "NGN",
     customer: customer.id,
-    success_url: "http://localhost:3000/checkout-success", //maybe add a query status for true?
+    success_url: "http://localhost:3001/checkout-success", //maybe add a query status for true?
     cancel_url: "http://localhost:3000/cart",
   });
 
