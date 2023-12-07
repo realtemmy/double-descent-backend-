@@ -1,8 +1,6 @@
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 
-// const socketIO = require('socket.io');
-// All sync uncaught error
 process.on("uncaughtException", (err) => {
   console.log("UNCAUGHT EXCEPTION, shutting down");
   console.log(err.name, err.message);
@@ -12,28 +10,6 @@ process.on("uncaughtException", (err) => {
 const app = require("./app");
 dotenv.config({ path: "./config.env" });
 
-// const http = require("http").createServer(app);
-
-// const { Server } = require("socket.io");
-
-// const io = new Server(http, {
-//   cors: {
-//     origin: "http://localhost:3001",
-//     credentials: true,
-//   },
-// });
-
-// io.on('connection', (socket) => {
-//   console.log("Connected to socketIO: ", socket);
-// })
-// io.on("connection", (socket) => {
-//   // console.log("Connected to socketIO: ", socket);
-//   socket.emit("hello", "world");
-// });
-
-// http.listen(3000, () => {
-//   console.log("Successfully connected to node server");
-// });
 
 const DB = process.env.DATABASE_LOCAL;
 // const DB = process.env.DATABASE;

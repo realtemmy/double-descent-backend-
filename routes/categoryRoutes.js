@@ -2,6 +2,7 @@ const express = require("express");
 const categoryController = require("./../controllers/categoryController");
 const authController = require("./../controllers/authController");
 const sectionRouter = require('./../routes/sectionRoutes');
+const productRouter = require("./../routes/productRoutes");
 
 // category/section/products
 // provision/cereals/cornflakes
@@ -9,6 +10,7 @@ const sectionRouter = require('./../routes/sectionRoutes');
 const router = express.Router();
 
 router.use("/:categoryId/section", sectionRouter);
+router.use("/:categoryId/product", productRouter);
 
 router
   .route("/")

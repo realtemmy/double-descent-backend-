@@ -10,7 +10,6 @@ const cors = require("cors");
 
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
-// const orderController = require("./controllers/orderController");
 const Order = require("./models/orderModel");
 
 const app = express();
@@ -109,8 +108,6 @@ const createOrder = async (checkoutSession) => {
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(compression());
-
-// Search route
 
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");

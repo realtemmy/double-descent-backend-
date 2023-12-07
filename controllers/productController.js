@@ -47,8 +47,11 @@ exports.getFeaturedProducts = catchAsync(async (req, res) => {
   });
 });
 
-exports.getAllProducts = catchAsync(async (req, res, next) => {
-  const features = new APIFeatures(Product.find(), req.query).paginate();
+exports.getAllProducts = catchAsync(async (req, res) => {
+  let filter = {};
+  if (req.params.categoryId) filter = { category: req.params.categoryId };
+
+  const features = new APIFeatures(Product.find(filter), req.query).paginate();
   const products = await features.query;
   res.status(200).json({
     status: "success",

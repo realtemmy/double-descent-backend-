@@ -111,39 +111,6 @@ exports.confirmOrder = catchAsync(async (req, res) => {
   }
 });
 
-exports.handleOrderCheckOut = catchAsync(async (checkoutSession) => {
-  const stripeRes = await stripe.customers.retrieve(checkoutSession.customer);
-  // console.log(stripe);
-
-  const session = await stripe.checkout.sessions.retrieve(checkoutSession.id, {
-    expand: ["line_items"],
-  });
-
-  // Get product Id's from the sessions
-  const productsIds = session.line_items.data.map((item) => item.price.product);
-  // Get all products with productId
-  const products = await Promise.all(
-    productsIds.map(async (id) => await stripe.products.retrieve(id))
-  );
-  // create order product
-  const newOrder = await Order.create({
-    user: stripeRes.metadata.userId,
-    customerId: stripeRes.id,
-    address: stripeRes.metadata.address,
-    phone: stripeRes.metadata.phone,
-    totalAmount: session.amount_total / 100,
-    products: products.map((product, idx) => ({
-      name: product.name,
-      productId: product.id,
-      image: product.images[0],
-      quantity: session.line_items.data[idx].quantity,
-      price: session.line_items.data[idx].price.unit_amount / 100,
-    })),
-  });
-
-  return newOrder;
-});
-
 exports.getCheckoutSession = catchAsync(async (req, res) => {
   const { address, phone, cartItems, deliveryFee } = req.body;
   console.log("Delivery fee: ", deliveryFee);
@@ -193,7 +160,7 @@ exports.getCheckoutSession = catchAsync(async (req, res) => {
     mode: "payment",
     currency: "NGN",
     customer: customer.id,
-    success_url: "http://localhost:3001/checkout-success", //maybe add a query status for true?
+    success_url: "http://localhost:3000/checkout-success", //maybe add a query status for true?
     cancel_url: "http://localhost:3000/cart",
   });
 
