@@ -6,6 +6,7 @@ const User = require("./../models/userModel");
 const AppError = require("./../utils/appError");
 const catchAsync = require("./../utils/catchAsync");
 const sendEmail = require(".././utils/email");
+// const { OAuth2Client } = require('google-auth-library')
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -85,8 +86,6 @@ exports.signup = catchAsync(async (req, res) => {
       )
     );
   }
-
-  // eslint-disable-next-line no-underscore-dangle
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -98,6 +97,10 @@ exports.login = catchAsync(async (req, res, next) => {
 
   // If account with email exist
   const user = await User.findOne({ email }).select("+password");
+
+  if(user.isGoogle){
+    return next(new AppError(`Account was created with google, please sign on using google.`))
+  }
 
   // Check if password inputed is equal to the password in DB ie compare passwords
   if (!user || !(await user.comparePasswords(password, user.password))) {
@@ -163,6 +166,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError("There is no user with this email address", 404));
   }
+  
   // Generate a random reset token
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
@@ -248,3 +252,44 @@ exports.updatePassword = async (req, res, next) => {
   // Log user in
   createSendToken(user, 200, res);
 };
+
+exports.googleLogin = catchAsync(async (req, res, next) => {
+  const { email } = req.body;
+
+  // 1) Check if account exists and is a google type with email
+  const user = await User.findOne({ email }).select("+isGoogle");
+
+  // 2) if account was not created by google login, throw error
+  if (!user || !user.isGoogle) {
+    return next(new AppError(`Email is not registered with google login`));
+  }
+
+  // 3) allow login, send jwt, response etc
+  createSendToken(user, 200, res);
+});
+
+exports.googleSignUp = catchAsync(async (req, res, next) => {
+  const { email, picture, given_name } = req.body;
+  // check if email already exists in database
+  const user = await User.findOne({ email });
+
+  // if it does, throw error that email already exists
+  if (user) {
+    return next(new AppError(`Email already exists`, 403));
+  }
+
+  const newUser = new User({
+    name: given_name,
+    email,
+    photo: picture,
+    isGoogle: true,
+  });
+
+  // disable validation before save
+  await newUser.save({ validateBeforeSave: false });
+
+  console.log(newUser);
+  createSendToken(newUser, 201, res);
+});
+
+exports.googleAuth = catchAsync(async (req, res, next) => {});

@@ -8,6 +8,10 @@ const router = express.Router();
 router.post("/signup", authController.signup);
 router.post("/login", authController.login);
 
+// Google login and sign up
+router.post("/google/login", authController.googleLogin)
+router.post("/google/signup", authController.googleSignUp)
+
 router.post("/forgotPassword", authController.forgotPassword);
 router.patch("/resetPassword/:token", authController.resetPassword);
 

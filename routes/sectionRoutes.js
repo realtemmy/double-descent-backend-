@@ -1,8 +1,11 @@
 const express = require("express");
 const authController = require("./../controllers/authController");
 const sectionController = require("./../controllers/sectionController");
+const productRouter = require("./../routes/productRoutes");
 
 const router = express.Router({ mergeParams: true });
+
+router.use("/:sectionId/products", productRouter);
 
 router
   .route("/")

@@ -5,7 +5,7 @@ const Product = require("../models/productModel");
 const APIFeatures = require("./../utils/apiFeatures");
 
 exports.getAllSections = catchAsync(async (req, res) => {
-  // Get all sections = getting all sections on a particular category if request is made to
+  // Get all sections = getting all sections on a particular category if request is made in
   // the format:  /api/v1/category/:categoryId/section
   let filter = {};
   if (req.params.categoryId) filter = { category: req.params.categoryId };
@@ -20,6 +20,8 @@ exports.getAllSections = catchAsync(async (req, res) => {
 
 exports.getSection = catchAsync(async (req, res) => {
   const section = await Section.findById(req.params.id).populate("products");
+  const docsCount = await Section.find().countDocuments();
+  // console.log(section);
   if (!section) {
     return next(
       new AppError(`No section found with that ID: ${req.params.id}`, 404)
@@ -29,6 +31,7 @@ exports.getSection = catchAsync(async (req, res) => {
   res.status(200).json({
     status: "success",
     data: section,
+    totalDocs: docsCount
   });
 });
 

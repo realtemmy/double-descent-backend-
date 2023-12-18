@@ -97,7 +97,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   req.body.phone = parseInt(req.body.phone);
   if (req.body.phone === NaN) {
     req.body.phone === undefined;
-    // throw error ?
+    return next(new AppError(`Please enter numbers in phone number input`)); //work on the english
   }
   if (req.file) filteredBody.photo = req.file.filename;
 

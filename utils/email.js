@@ -69,13 +69,13 @@ Best,
 //     });
 //   }
 
-//   async send(subject, template) {
+//   async send(subject, html) {
 //     const mailOptions = {
 //       from: this.from,
 //       to: this.to,
 //       subject,
 //       // text: options.message,
-//       html: template,
+//       html,
 //     };
 
 //     await this.transporter().sendMail(mailOptions)

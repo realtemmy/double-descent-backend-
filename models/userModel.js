@@ -1,6 +1,5 @@
 const crypto = require("crypto");
 const mongoose = require("mongoose");
-const slugify = require("slugify")
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
@@ -37,6 +36,11 @@ const userSchema = new mongoose.Schema({
     // if u later change to isAdmin format, remamber to change in restrict middleware at authcontroller
     type: String,
     default: "user",
+  },
+  isGoogle: {
+    type: Boolean,
+    default: false,
+    select: false,
   },
   phone: Number,
   address: String,

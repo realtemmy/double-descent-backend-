@@ -1,12 +1,10 @@
 const stripe = require("stripe")(
   "sk_test_51LsCPvGIPXZEyyN0PgYbiIPhS1S8a8zUO7SQrueZ6iBaC85607HMxa3g20e4GOqeIWhfVQEEuawcC13xW9QZG07x00iISqD203"
 );
-// const http = require("http");
-// const socketIO = require("socket.io");
-// const path = require("path");
 const express = require("express");
 const compression = require("compression");
 const cors = require("cors");
+const { OAuth2Client } = require("google-auth-library");
 
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
@@ -14,9 +12,9 @@ const Order = require("./models/orderModel");
 
 const app = express();
 
-const http = require("http").createServer(app);
-
+// ======= SocketIO ======== //
 const { Server } = require("socket.io");
+const http = require("http").createServer(app);
 
 const io = new Server(http, {
   cors: {
@@ -24,15 +22,17 @@ const io = new Server(http, {
     credentials: true,
   },
 });
-
 io.on("connection", (socket) => {
   // console.log("Connected to socketIO: ", socket);
   socket.emit("hello", "world");
 });
 
 http.listen(4000, () => {
-  console.log("Successfully connected to node server");
+  console.log("Successfully connected to node server --SocketIO");
 });
+
+
+// ===== Stripe webhook ===== //
 
 const endpointSecret =
   "whsec_7e3cdfa012a58f494448e79ba1245817af82ab8a0f98a4759690af7c74ac46ab";
@@ -99,7 +99,7 @@ const createOrder = async (checkoutSession) => {
       price: session.line_items.data[idx].price.unit_amount / 100,
     })),
   });
-  const latestOrder = await Order.findById(newOrder._id)
+  const latestOrder = await Order.findById(newOrder._id);
   console.log(latestOrder);
 
   return latestOrder;
@@ -116,6 +116,9 @@ const orderRoutes = require("./routes/orderRoutes");
 const sectionRoutes = require("./routes/sectionRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const searchRoutes = require("./routes/searchRoutes");
+
+
+// ====== Routes Middlewares ======= //
 
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/products", productRoutes);

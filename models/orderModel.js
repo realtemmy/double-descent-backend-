@@ -48,7 +48,7 @@ const orderSchema = new mongoose.Schema({
     default: "paid",
     enum: {
       values: ["paid", "pending", "delivered", "cancelled"],
-      message: "Status is either paid, progress, delivered, or cancelled",
+      message: "{value} is not supported.",
     },
   },
   createdAt: {
