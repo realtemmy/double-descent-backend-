@@ -99,7 +99,10 @@ const createOrder = async (checkoutSession) => {
       price: session.line_items.data[idx].price.unit_amount / 100,
     })),
   });
-  const latestOrder = await Order.findById(newOrder._id);
+  const latestOrder = await Order.findById(newOrder._id).populate({
+    path: "user",
+    select: "email name",
+  });
   console.log(latestOrder);
 
   return latestOrder;

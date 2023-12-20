@@ -38,22 +38,12 @@ exports.getUserOrder = catchAsync(async (req, res) => {
   });
 });
 
-// exports.getOrderType = catchAsync(async (req, res) => {
-//   // get type
-//   console.log(req.params.type);
-//   let filter = {};
-//   if (req.params.type) filter = { status: req.params.type };
-//   const orderType = await Order.find(filter);
-
-//   res.status(200).json({
-//     status: "success",
-//     data: orderType,
-//   });
-// });
-
 exports.getOrder = catchAsync(async (req, res) => {
   // remember to populate with users
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id).populate({
+    path: "user",
+    select: "email name",
+  });
   res.status(200).json({
     status: "success",
     data: order,
@@ -67,6 +57,9 @@ exports.confirmOrder = catchAsync(async (req, res, next) => {
   const updatedOrder = await Order.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
+  }).populate({
+    path: "user",
+    select: "email name",
   });
 
   const html = `

@@ -99,7 +99,7 @@ exports.login = catchAsync(async (req, res, next) => {
   const user = await User.findOne({ email }).select("+password");
 
   if(user.isGoogle){
-    return next(new AppError(`Account was created with google, please sign on using google.`))
+    return next(new AppError(`Account was created with google, please sign on using google sign in.`))
   }
 
   // Check if password inputed is equal to the password in DB ie compare passwords

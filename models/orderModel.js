@@ -57,13 +57,13 @@ const orderSchema = new mongoose.Schema({
   },
 });
 
-orderSchema.pre(/^find/, function (next) {
-  this.populate({
-    path: "user",
-    select: "email name",
-  });
-  next();
-});
+// orderSchema.pre(/^find/, function (next) {
+//   this.populate({
+//     path: "user",
+//     select: "email name",
+//   });
+//   next();
+// });
 
 const Order = mongoose.model("Order", orderSchema);
 
