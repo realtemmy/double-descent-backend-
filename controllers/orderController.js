@@ -51,49 +51,62 @@ exports.getOrder = catchAsync(async (req, res) => {
 });
 
 exports.confirmOrder = catchAsync(async (req, res, next) => {
-  // maybe find order first, then send email(if email is successful, then edit)
-  // pop delivery fee when creating the order?
-  const docsCount = await Order.find().countDocuments();
-  const updatedOrder = await Order.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  }).populate({
+  // check if order exists
+  const order = await Order.findById(req.params.id).populate({
     path: "user",
     select: "email name",
   });
+  if (!order) {
+    return next(new AppError("Order does not exist", 404));
+  }
 
   const html = `
     <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
     <div
         style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);">
         <h1 style="color: #333;">Order Confirmation</h1>
-        <p style="color: #666;">Dear ${updatedOrder.user.name},</p>
-        <p style="color: #666;">Your order for ${updatedOrder.products
+        <p style="color: #666;">Dear ${order.user.name},</p>
+        <p style="color: #666;">Your order for ${order.products
           .map((product) => product.name + " x " + product.quantity)
           .join(", ")} has been successfully placed.</p>
-        <p style="color: #666;">Order Number: ${updatedOrder._id}</p>
+        <p style="color: #666;">Order Number: ${order._id}</p>
         <p style="color: #666;">Total amount: &#x20A6;${
-          updatedOrder.totalAmount
+          order.totalAmount
         }</p>
         <p style="color: #666;">Order will be delivered to "${
-          updatedOrder.address
-        }" and we will be reaching out to you at 0${updatedOrder.phone}.<p/>
+          order.address
+        }" and we will be reaching out to you at 0${order.phone}.<p/>
         <p style="color: #666;">Please contact us at <a href="mailto:temiloluwaogunti8@gmail.com" style="display: inline-block; padding: 5px 10px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 3px; margin-top: 20px;"> sales@doubledecent.com</a> or <a href="tel:+2348066771553" style="display: inline-block; padding: 5px 10px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 3px;;">Call us</a> to make edit to anay changes.</p>
         <p style="color: #666;">Thank you for shopping with us.</p>
     </div>
 </body>
   `;
-  await sendEmail({
-    email: updatedOrder.user.email,
-    subject: `Order confirmation - ${updatedOrder._id}`,
-    // message,
-    html,
-  });
-  res.status(200).json({
-    status: "success",
-    data: updatedOrder,
-    totalDocs: docsCount,
-  });
+  try {
+    await sendEmail({
+      email: order.user.email,
+      subject: `Order confirmation - ${order._id}`,
+      // message,
+      html,
+    });
+
+    const docsCount = await Order.find().countDocuments();
+    const updatedOrder = await Order.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: updatedOrder,
+      totalDocs: docsCount,
+    });
+  } catch (error) {
+    return next(new AppError("There was a problem sending the mail", 500));
+  }
 });
 
 exports.getCheckoutSession = catchAsync(async (req, res) => {

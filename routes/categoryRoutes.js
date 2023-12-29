@@ -11,6 +11,7 @@ const router = express.Router();
 
 router.use("/:categoryId/section", sectionRouter);
 router.use("/:categoryId/product", productRouter);
+router.use("/section/:sectionId/product", productRouter);
 
 router
   .route("/")

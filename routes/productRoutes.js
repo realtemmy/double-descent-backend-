@@ -17,7 +17,7 @@ router
     productController.createProduct
   );
 
-router.route("/page/:page").get(productController.getAllProducts);
+router.route("/page").get(productController.getAllProducts);
 
 router.route("/featured-products").get(productController.getFeaturedProducts);
 

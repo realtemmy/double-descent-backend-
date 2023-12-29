@@ -118,7 +118,7 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const sectionRoutes = require("./routes/sectionRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
-const searchRoutes = require("./routes/searchRoutes");
+const helperRoutes = require("./routes/helperRoutes");
 
 
 // ====== Routes Middlewares ======= //
@@ -129,7 +129,7 @@ app.use("/api/v1/category", categoryRoutes);
 app.use("/api/v1/order", orderRoutes);
 app.use("/api/v1/sections", sectionRoutes);
 app.use("/api/v1/checkout/create-payment-intent", paymentRoutes);
-app.use("/api/v1/search", searchRoutes);
+app.use("/api/v1/help", helperRoutes);
 
 // All undefined routes
 app.use("*", (req, res, next) => {
@@ -139,4 +139,5 @@ app.use("*", (req, res, next) => {
 // Global error handler
 app.use(globalErrorHandler);
 
+exports.socketIO = io;
 module.exports = app;

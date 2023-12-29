@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const User = require("./../models/userModel");
 const AppError = require("./../utils/appError");
 const catchAsync = require("./../utils/catchAsync");
-const sendEmail = require(".././utils/email");
+const sendEmail = require("./../utils/email");
 // const { OAuth2Client } = require('google-auth-library')
 
 const signToken = (id) => {
