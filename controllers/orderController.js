@@ -89,7 +89,7 @@ exports.confirmOrder = catchAsync(async (req, res, next) => {
       html,
     });
 
-    const docsCount = await Order.find().countDocuments();
+    // const docsCount = await Order.find().countDocuments();
     const updatedOrder = await Order.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -102,7 +102,7 @@ exports.confirmOrder = catchAsync(async (req, res, next) => {
     res.status(200).json({
       status: "success",
       data: updatedOrder,
-      totalDocs: docsCount,
+      // totalDocs: docsCount,
     });
   } catch (error) {
     return next(new AppError("There was a problem sending the mail", 500));
