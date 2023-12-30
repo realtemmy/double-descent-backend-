@@ -51,14 +51,14 @@ exports.getAllProducts = catchAsync(async (req, res) => {
   let filter = {};
   if (req.params.categoryId) filter = { category: req.params.categoryId };
   if (req.params.sectionId) filter = { section: req.params.sectionId };
-  const totalDocs = await Product.find(filter).countDocuments();
+  // const totalDocs = await Product.find(filter).countDocuments();
   const features = new APIFeatures(Product.find(filter), req.query).paginate();
   const products = await features.query;
   res.status(200).json({
     status: "success",
     results: products.length,
     data: products,
-    totalDocs,
+    // totalDocs,
   });
 });
 
