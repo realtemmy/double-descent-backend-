@@ -16,6 +16,8 @@ router
     helperController.sendEmails
   );
 
-router.route('/user-message').post(authController.protect, helperController.userComplaintsMessages)
+router
+  .route("/user-message")
+  .post(authController.protect, helperController.userComplaintsMessages);
 
 module.exports = router;

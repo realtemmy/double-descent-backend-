@@ -4,7 +4,6 @@ const stripe = require("stripe")(
 const express = require("express");
 const compression = require("compression");
 const cors = require("cors");
-const { OAuth2Client } = require("google-auth-library");
 
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
@@ -42,7 +41,7 @@ app.post(
   express.raw({ type: "application/json" }),
   async (request, response) => {
     const sig = request.headers["stripe-signature"];
-    console.log("Getting here");
+    // console.log("Getting here");
 
     let event;
 

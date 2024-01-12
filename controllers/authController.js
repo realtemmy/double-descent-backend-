@@ -6,7 +6,6 @@ const User = require("./../models/userModel");
 const AppError = require("./../utils/appError");
 const catchAsync = require("./../utils/catchAsync");
 const sendEmail = require("./../utils/email");
-// const { OAuth2Client } = require('google-auth-library')
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -175,7 +174,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   //   "host"
   // )}/api/v1/resetPassword/${resetToken}`;
 
-  const resetURL = `http://localhost:3000/reset-password/${resetToken}`;
+  const resetURL = `${process.env.FRONTEND_HOST}/reset-password/${resetToken}`;
 
   // const message = `Forgot your password? Submit a patched request with your new password and passwordConfirm to: ${resetURL}\n If you didn't forget please ignore this email.`;
 
@@ -288,8 +287,45 @@ exports.googleSignUp = catchAsync(async (req, res, next) => {
   // disable validation before save
   await newUser.save({ validateBeforeSave: false });
 
-  console.log(newUser);
-  createSendToken(newUser, 201, res);
+  const html = `
+    <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);">
+        <h1 style="color: #333;">Welcome to Our E-commerce Store!</h1>
+        <p style="color: #666;">Dear ${newUser.name},</p>
+        <p style="color: #666;">We’re super excited to see you join the Double Descent superstore community. Thank you for choosing us for your shopping needs. Our team is dedicated to providing you with a great shopping experience.</p>
+        <p style="color: #666;">Here are some of the things you can expect from our store:</p>
+        <ul>
+            <li style="color: #666;">Wide selection of high-quality products</li>
+            <li style="color: #666;">Competitive prices and exclusive discounts</li>
+            <li style="color: #666;">Fast and secure checkout process</li>
+            <li style="color: #666;">Excellent customer support</li>
+        </ul>
+        <p style="color: #666;">Our goal is to offer you the widest range of products at the highest quality. If you think we should add any items to our store, don’t hesitate to contact us and share your feedback.</p>
+        <p style="color: #666;">Start exploring our products and enjoy shopping with us!</p>
+        <a href="http://localhost:3000" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 3px; margin-top: 20px;">Shop Now</a>
+        <p style="color: #666;">If you have any questions or need assistance, feel free to contact our customer support team.</p>
+        <p style="color: #666;">Thank you for choosing us. We look forward to serving you.</p>
+        <p style="color: #666;">Sincerely,<br>Your E-commerce Team</p>
+    </div>
+</body>
+  `;
+
+  try {
+    await sendEmail({
+      email: newUser.email,
+      subject: "Welcome to double descent!",
+      // message,
+      html,
+    });
+    createSendToken(newUser, 201, res);
+  } catch (error) {
+    return next(
+      new AppError(
+        "There was an error sending the email. Please try again later!",
+        500
+      )
+    );
+  }
 });
 
 exports.googleAuth = catchAsync(async (req, res, next) => {});
