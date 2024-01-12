@@ -71,21 +71,21 @@ exports.sendEmails = catchAsync(async (req, res, next) => {
 });
 
 exports.userComplaintsMessages = catchAsync(async (req, res) => {
-  // Get the message, the user that sent the message etc
-  // or should I just make it send directly to emails?
   const { message } = req.body;
-  console.log(req.user);
-  const userMessage = Message.create({
-    user: req.user.id,
+  // console.log(req.user);
+  const userMessage = await Message.create({
+    user: req.user._id,
     email: req.user.email,
     message,
   });
 
-  socketIO.on("connection", (socket) => {
-    socket.emit("message", "successsful");
-  });
+  // console.log(userMessage);
 
-  socketIO.emit("message", userMessage);
+  // socketIO.on("connection", (socket) => {
+  //   socket.emit("message", "successful");
+  // });
+
+  // socketIO.emit("message", userMessage);
   res.status(201).json({
     status: "success",
     data: userMessage,
