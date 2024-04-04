@@ -1,10 +1,12 @@
-const stripe = require("stripe")(
-  "sk_test_51LsCPvGIPXZEyyN0PgYbiIPhS1S8a8zUO7SQrueZ6iBaC85607HMxa3g20e4GOqeIWhfVQEEuawcC13xW9QZG07x00iISqD203"
-);
+const dotenv = require("dotenv");
+dotenv.config({ path: "./../config.env" });
+const https = require("https");
+
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const Order = require("./../models/orderModel");
-const User = require("./../models/userModel");
+// const User = require("./../models/userModel");
 const sendEmail = require("./../utils/email");
 const APIFeatures = require("./../utils/apiFeatures");
 
@@ -70,9 +72,7 @@ exports.confirmOrder = catchAsync(async (req, res, next) => {
           .map((product) => product.name + " x " + product.quantity)
           .join(", ")} has been successfully placed.</p>
         <p style="color: #666;">Order Number: ${order._id}</p>
-        <p style="color: #666;">Total amount: &#x20A6;${
-          order.totalAmount
-        }</p>
+        <p style="color: #666;">Total amount: &#x20A6;${order.totalAmount}</p>
         <p style="color: #666;">Order will be delivered to "${
           order.address
         }" and we will be reaching out to you at 0${order.phone}.<p/>
@@ -108,6 +108,36 @@ exports.confirmOrder = catchAsync(async (req, res, next) => {
     return next(new AppError("There was a problem sending the mail", 500));
   }
 });
+
+const transformedItemsFunc = (cartItems, deliveryFee) => {
+  const transformedItems = cartItems.map((item) => ({
+    quantity: item.quantity,
+    price_data: {
+      currency: "NGN",
+      unit_amount: item.price * 100,
+      product_data: {
+        name: item.name,
+        images: [item.image],
+      },
+    },
+  }));
+
+  transformedItems.push({
+    quantity: 1,
+    price_data: {
+      currency: "NGN",
+      unit_amount: deliveryFee * 100,
+      product_data: {
+        name: "delivery fee",
+        images: [
+          "https://c8.alamy.com/comp/J27BPE/motorcycle-delivery-vehicle-icon-J27BPE.jpg",
+        ],
+      },
+    },
+  });
+
+  return transformedItems;
+};
 
 exports.getCheckoutSession = catchAsync(async (req, res) => {
   const { address, phone, cartItems, deliveryFee } = req.body;
@@ -167,3 +197,5 @@ exports.getCheckoutSession = catchAsync(async (req, res) => {
     url: session.url,
   });
 });
+
+

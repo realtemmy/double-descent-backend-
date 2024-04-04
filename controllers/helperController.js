@@ -8,6 +8,7 @@ const sendEmail = require("./../utils/email");
 const socketIO = require("./../app");
 
 exports.getSearchResults = catchAsync(async (req, res) => {
+  // or first check products, if empty check sections then category
   const searchValue = req.params.searchValue;
 
   let result = [];

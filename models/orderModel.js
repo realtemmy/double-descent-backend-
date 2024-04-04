@@ -6,6 +6,10 @@ const orderSchema = new mongoose.Schema({
     ref: "User",
     required: [true, "Order must belong to a user"],
   },
+  transactionId: {
+    type:String,
+    required: [true, "An order must have a transactionId"]
+  },
   customerId: String,
   address: {
     type: String,
@@ -55,6 +59,15 @@ const orderSchema = new mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
+  paymentMode: {
+    type: String,
+    required: [true, "Please enter mode of  payment"]
+  },
+  paymentChannel: String,
+  deliveryFee:{
+    type: String,
+    required: [true, "Delivery fee not set"]
+  }
 });
 
 // orderSchema.pre(/^find/, function (next) {

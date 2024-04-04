@@ -1,6 +1,7 @@
 const express = require("express");
 const orderController = require("./../controllers/orderController");
 const authController = require("./../controllers/authController");
+const paymentController = require("./../controllers/paymentController");
 
 const router = express.Router();
 
@@ -18,5 +19,9 @@ router
 router
   .route("/checkout")
   .post(authController.protect, orderController.getCheckoutSession);
+
+router
+  .route("/paystack-checkout")
+  .post(authController.protect, paymentController.getPaystackCheckoutSession);
 
 module.exports = router;
