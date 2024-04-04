@@ -34,8 +34,6 @@ http.listen(4000, () => {
   console.log("Successfully connected to node server --SocketIO");
 });
 
-// const endpointSecret =
-//   "whsec_7e3cdfa012a58f494448e79ba1245817af82ab8a0f98a4759690af7c74ac46ab";
 const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 
 app.post(
@@ -114,9 +112,10 @@ app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(compression());
 
-// ====================================
-// PayStack Webhook
-//  ====================================
+
+/* ====================================
+  PayStack Webhook
+==================================== */
 const verify = (eventData, signature) => {
   const hmac = crypto.createHmac(
     "sha512",
@@ -155,7 +154,7 @@ app.post("/paystack/webhook", async (req, res) => {
         name: product.name,
         productId: product._id,
         quantity: product.quantity,
-        price: product.price,
+        price: product.price / 100,
         image: product.image
       })),
     });
