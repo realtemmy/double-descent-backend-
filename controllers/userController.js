@@ -94,7 +94,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   }
 
   const filteredBody = filterObj(req.body, "name", "email", "phone", "address");
-  req.body.phone = parseInt(req.body.phone);
+  filteredBody.phone = parseInt(filteredBody.phone)
   if (req.body.phone === NaN) {
     req.body.phone === undefined;
     return next(new AppError(`Please enter numbers in phone number input`)); //work on the english

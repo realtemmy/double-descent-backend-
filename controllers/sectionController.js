@@ -73,10 +73,11 @@ exports.deleteSection = catchAsync(async (req, res, next) => {
     );
   }
 
-  const section = await Section.findByIdAndDelete(req.params.id);
-  if (!section) {
-    return next(new AppError(`No section with that ID: ${req.params.id}`, 404));
-  }
+  await Section.findByIdAndDelete(req.params.id);
+  // const section = await Section.findByIdAndDelete(req.params.id);
+  // if (!section) {
+  //   return next(new AppError(`No section with that ID: ${req.params.id}`, 404));
+  // }
 
   res.status(204).json({
     status: "success",
