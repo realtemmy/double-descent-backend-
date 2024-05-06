@@ -1,6 +1,10 @@
-const stripe = require("stripe")(
-  "sk_test_51LsCPvGIPXZEyyN0PgYbiIPhS1S8a8zUO7SQrueZ6iBaC85607HMxa3g20e4GOqeIWhfVQEEuawcC13xW9QZG07x00iISqD203"
-);
+const crypto = require("crypto");
+const dotenv = require("dotenv");
+
+dotenv.config({ path: "./config.env" });
+
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
 const express = require("express");
 const compression = require("compression");
 const cors = require("cors");
@@ -30,11 +34,7 @@ http.listen(4000, () => {
   console.log("Successfully connected to node server --SocketIO");
 });
 
-
-// ===== Stripe webhook ===== //
-
-const endpointSecret =
-  "whsec_7e3cdfa012a58f494448e79ba1245817af82ab8a0f98a4759690af7c74ac46ab";
+const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 
 app.post(
   "/webhook",
@@ -89,6 +89,7 @@ const createOrder = async (checkoutSession) => {
     customerId: stripeRes.id,
     address: stripeRes.metadata.address,
     phone: stripeRes.metadata.phone,
+    paymentMode: "Stripe",
     totalAmount: session.amount_total / 100,
     products: products.map((product, idx) => ({
       name: product.name,
@@ -111,6 +112,65 @@ app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(compression());
 
+
+/* ====================================
+  PayStack Webhook
+==================================== */
+const verify = (eventData, signature) => {
+  const hmac = crypto.createHmac(
+    "sha512",
+    process.env.PAYSTACK_TEST_SECRET_KEY
+  );
+  const expectedSignature = hmac
+    .update(JSON.stringify(eventData))
+    .digest("hex");
+  return expectedSignature === signature;
+};
+
+app.post("/paystack/webhook", async (req, res) => {
+  const eventData = req.body;
+  const signature = req.headers["x-paystack-signature"];
+
+  console.log(eventData);
+
+  if (!verify(eventData, signature)) {
+    return res.sendStatus(400);
+  }
+
+  if (eventData.event === "charge.success") {
+    const transactionId = eventData.data.id;
+    const { data } = eventData;
+    const newOder = await Order.create({
+      user: data.metadata.userId,
+      transactionId: transactionId,
+      customerId: data.customer.customer_code,
+      address: data.metadata.address,
+      phone: data.metadata.phone,
+      totalAmount: data.amount / 100,
+      paymentMode: "Paystack",
+      paymentChannel: data.channel,
+      deliveryFee: data.metadata.deliveryFee,
+      products: data.metadata.cartItems.map((product) => ({
+        name: product.name,
+        productId: product._id,
+        quantity: product.quantity,
+        price: product.price / 100,
+        image: product.image
+      })),
+    });
+    // Process the successful transaction to maybe fund wallet and update your WalletModel
+    console.log(`Transaction ${transactionId} was successful`);
+    const latestOrder = await Order.findById(newOder._id).populate({
+      path: "user",
+      select: "name email"
+    })
+    // seend order to admin
+    io.emit("newOrder", latestOrder);
+  }
+
+  return res.sendStatus(200);
+});
+
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
@@ -119,8 +179,7 @@ const sectionRoutes = require("./routes/sectionRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const helperRoutes = require("./routes/helperRoutes");
 
-
-// ====== Routes Middlewares ======= //
+// ================ Routes Middlewares ================= //
 
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/products", productRoutes);
@@ -138,5 +197,4 @@ app.use("*", (req, res, next) => {
 // Global error handler
 app.use(globalErrorHandler);
 
-exports.socketIO = io;
 module.exports = app;

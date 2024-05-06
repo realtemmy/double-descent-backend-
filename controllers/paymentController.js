@@ -2,7 +2,10 @@ require("dotenv").config();
 const stripe = require("stripe")(
   "sk_test_51LsCPvGIPXZEyyN0PgYbiIPhS1S8a8zUO7SQrueZ6iBaC85607HMxa3g20e4GOqeIWhfVQEEuawcC13xW9QZG07x00iISqD203"
 );
+const https = require("https");
 const catchAsync = require("./../utils/catchAsync");
+
+// create payment for paystack here,the transfer mode etc.
 
 const calculateTotalAmount = (items, deliveryFee) => {
   let amount = 0;
@@ -10,7 +13,7 @@ const calculateTotalAmount = (items, deliveryFee) => {
     amount += item.quantity * item.price;
   });
   amount += deliveryFee;
-  return amount;
+  return amount * 100;
 };
 
 exports.createPaymentIntent = catchAsync(async (req, res) => {
@@ -29,4 +32,64 @@ exports.createPaymentIntent = catchAsync(async (req, res) => {
     status: "success",
     clientSecret: paymentIntent.client_secret,
   });
+});
+
+exports.getPaystackCheckoutSession = catchAsync(async (request, response) => {
+  const { address, phone, cartItems, deliveryFee } = request.body;
+
+  const params = JSON.stringify({
+    email: request.user.email,
+    amount: calculateTotalAmount(cartItems, deliveryFee),
+    metadata: {
+      address,
+      phone,
+      cartItems,
+      deliveryFee,
+      userId: request.user.id,
+    },
+    custom_fields: [
+      {
+        display_name: "Customer's name",
+        variable_name: "customer_name",
+        value: request.user.name,
+      },
+      // display name for emails maybe?
+    ],
+  });
+
+  // metadata cartItems, address, phone, deliveryFee, userId
+
+  const options = {
+    hostname: "api.paystack.co",
+    port: 443,
+    path: "/transaction/initialize",
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.PAYSTACK_TEST_SECRET_KEY}`,
+      "Content-Type": "application/json",
+    },
+  };
+
+  const req = https
+    .request(options, (res) => {
+      let data = "";
+
+      res.on("data", (chunk) => {
+        data += chunk;
+      });
+
+      res.on("end", () => {
+        console.log(JSON.parse(data));
+        response.json({
+          status: "success",
+          url: JSON.parse(data).data.authorization_url,
+        });
+      });
+    })
+    .on("error", (error) => {
+      console.error(error);
+    });
+
+  req.write(params);
+  req.end();
 });
