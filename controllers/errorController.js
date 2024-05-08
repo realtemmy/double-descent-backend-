@@ -8,11 +8,10 @@ const handleCastErrorDB = (err) => {
   return newErr;
 };
 
-const handleDuplicateError = (err) => {
-  console.log("Duplicate: ", err);
-  const message = `Duplicate value of ${JSON.stringify(err.keyValue)}`;
-  const dupErr = new AppError(message, 401);
-  return dupErr;
+const handleDuplicateFieldsDB = (err) => {
+  const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
+  const message = `Duplicate field value ${value}: Please use another value`;
+  return new AppError(message, 400);
 };
 
 const sendErrorDev = (err, res) => {
@@ -59,7 +58,7 @@ module.exports = (err, req, res, next) => {
     if (err.name === "CastError") err = handleCastErrorDB(err);
     if (err.name === "JsonWebTokenError") err = handleJWTError();
     if (err.name === "TokenExpiredError") err = handleExpiredJWTError();
-    if (err.code === 11000) err = handleDuplicateError(err);
+    if (err.code === 11000) err = handleDuplicateFieldsDB(err);
 
     sendErrorProd(err, res);
   }
