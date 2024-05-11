@@ -24,7 +24,7 @@ exports.getAllOrders = catchAsync(async (req, res) => {
 });
 
 exports.getAllUserOrder = catchAsync(async (req, res) => {
-  const orders = await Order.find();
+  const orders = await Order.find({ user: req.user.id });
   res.status(200).json({
     status: "success",
     data: orders,
@@ -197,5 +197,3 @@ exports.getCheckoutSession = catchAsync(async (req, res) => {
     url: session.url,
   });
 });
-
-

@@ -37,6 +37,7 @@ exports.createPaymentIntent = catchAsync(async (req, res) => {
 exports.getPaystackCheckoutSession = catchAsync(async (request, response) => {
   const { address, phone, cartItems, deliveryFee } = request.body;
 
+  console.log("Paystack: Getting here");
   const params = JSON.stringify({
     email: request.user.email,
     amount: calculateTotalAmount(cartItems, deliveryFee),
