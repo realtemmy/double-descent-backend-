@@ -9,7 +9,7 @@ const sectionSchema = new mongoose.Schema(
       required: [true, "Name for section is required"],
     },
     category: {
-      type: mongoose.Schema.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
       required: [true, "Section must belong to a category"],
     },

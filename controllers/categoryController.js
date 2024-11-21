@@ -25,12 +25,15 @@ const upload = multer({
 
 exports.uploadCategoryPhoto = upload.single("image");
 
-exports.uploadCategoryImage = catchAsync(async (req, res, next) => {
-  console.log("File", req.file);
-  console.log("Body: ", req.body);
+exports.confirmCategoryImage = (req, res, next) => {
   if (!req.file) {
     return next(new AppError("No file uploaded", 400));
   }
+  next();
+};
+
+exports.uploadCategoryImage = catchAsync(async (req, res, next) => {
+  if (!req.file) return next();
   const b64 = Buffer.from(req.file.buffer).toString("base64");
   let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
   const result = await cloudinary.uploader.upload(dataURI, {
@@ -63,6 +66,8 @@ exports.getCategory = catchAsync(async (req, res) => {
 });
 
 exports.createCategory = catchAsync(async (req, res) => {
+  console.log(req.body);
+
   const newCategory = await Category.create(req.body);
   res.status(201).json({
     status: "success",
@@ -70,18 +75,28 @@ exports.createCategory = catchAsync(async (req, res) => {
   });
 });
 
-exports.updateCategory = catchAsync(async (req, res) => {
+exports.updateCategory = catchAsync(async (req, res, next) => {
+  const { name, image } = req.body;
+  const updateData = {};
+  if (name) updateData.name = name;
+  if (image !== null && image !== undefined && image !== "null")
+    updateData.image = image;
+
+  if (!name && !image) {
+    return next(new AppError("No data to update", 400));
+  }
+
   const updatedCategory = await Category.findByIdAndUpdate(
     req.params.id,
-    req.body,
+    updateData,
     {
       new: true,
       runValidators: true,
     }
   );
-  res.status(201).json({
+  res.status(200).json({
     status: "success",
-    data: { updatedCategory },
+    data: updatedCategory,
   });
 });
 
@@ -93,36 +108,85 @@ const getPublicIdFromImageUrl = (imageUrl) => {
   return publicId;
 };
 
-exports.deleteCategory = catchAsync(async (req, res, next) => {
-  // Get category to be deleted
-  // console.log("getting here");
+// exports.deleteCategory = catchAsync(async (req, res, next) => {
+//   const cat = await Category.findById(req.params.id)
+//     .populate("sections")
+//     .populate("products");
+//   if (!cat) {
+//     return next(
+//       new AppError(`No category found with that ID: ${req.params.id}`, 404)
+//     );
+//   }
+//   // Get image public_id if there is an image
+//   const public_id = cat.image ? getPublicIdFromImageUrl(cat.image) : null;
+//   if (public_id) {
+//     await cloudinary.uploader.destroy(public_id);
+//   }
 
+//   // Delete image at cloudinary
+//   await cloudinary.uploader.destroy(public_id);
+
+//   // Delete sections
+//   await Promise.all(
+//     cat.sections.map(async (category) => {
+//       await Section.findByIdAndDelete(category._id);
+//     })
+//   );
+//   // Delete products
+//   await Promise.all(
+//     cat.products.map(async (category) => {
+//       await Product.findByIdAndDelete(category._id);
+//     })
+//   );
+//   // Delete category from database
+//   await Category.findByIdAndDelete(req.params.id);
+
+//   res.status(204).json({
+//     status: "success",
+//     data: null,
+//   });
+// });
+
+exports.deleteCategory = catchAsync(async (req, res, next) => {
   const cat = await Category.findById(req.params.id)
     .populate("sections")
     .populate("products");
+
   if (!cat) {
     return next(
       new AppError(`No category found with that ID: ${req.params.id}`, 404)
     );
   }
-  // Get image public_id
-  const public_id = getPublicIdFromImageUrl(cat.image);
-  // Delete image at cloudinary
-  await cloudinary.uploader.destroy(public_id);
+
+  // Get image public_id if there is an image
+  const public_id = cat.image ? getPublicIdFromImageUrl(cat.image) : null;
+  if (public_id) {
+    await cloudinary.uploader.destroy(public_id);
+  }
 
   // Delete sections
-  await Promise.all(
-    cat.sections.map(async (category) => {
-      await Section.findByIdAndDelete(category._id);
-    })
-  );
-  // Delete products
-  await Promise.all(
-    cat.products.map(async (category) => {
-      await Product.findByIdAndDelete(category._id);
-    })
-  );
-  // Delete category from database
+  if (Array.isArray(cat.sections)) {
+    await Section.deleteMany({ _id: { $in: cat.sections.map((s) => s._id) } });
+  }
+
+  // Delete products and their images
+  if (Array.isArray(cat.products)) {
+    await Promise.all(
+      cat.products.map(async (product) => {
+        const productPublicId = product.image
+          ? getPublicIdFromImageUrl(product.image)
+          : null;
+
+        if (productPublicId) {
+          await cloudinary.uploader.destroy(productPublicId);
+        }
+
+        await Product.findByIdAndDelete(product._id);
+      })
+    );
+  }
+
+  // Delete the category from the database
   await Category.findByIdAndDelete(req.params.id);
 
   res.status(204).json({

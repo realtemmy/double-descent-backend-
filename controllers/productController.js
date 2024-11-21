@@ -63,7 +63,10 @@ exports.getAllProducts = catchAsync(async (req, res) => {
 });
 
 exports.getProduct = catchAsync(async (req, res, next) => {
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findById(req.params.id).populate(
+    "category",
+    "name"
+  );
   if (!product) {
     return next(
       new AppError(`No product found with that ID: ${req.params.id}`, 404)
