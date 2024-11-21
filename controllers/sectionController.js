@@ -5,9 +5,11 @@ const Product = require("../models/productModel");
 const APIFeatures = require("./../utils/apiFeatures");
 
 exports.getAllSections = catchAsync(async (req, res) => {
-  let filter = {};
-  if (req.params.categoryId) filter = { category: req.params.categoryId };
-  const features = new APIFeatures(Section.find(filter), req.query).paginate();
+  const filter = req.params.categoryId
+    ? { category: req.params.categoryId }
+    : {};
+  const query = Section.find(filter).populate("category", "name");
+  const features = new APIFeatures(query, req.query).paginate();
   const sections = await features.query;
   res.status(200).json({
     status: "success",
@@ -22,7 +24,7 @@ exports.getSection = catchAsync(async (req, res) => {
   // console.log(section);
   if (!section) {
     return next(
-      new AppError(`No section found with that ID: ${req.params.id}`, 404)
+      new AppError(`No section found with that ID: ${req.params.id}`, 404);
     );
   }
 
@@ -64,6 +66,10 @@ exports.updateSection = catchAsync(async (req, res) => {
 exports.deleteSection = catchAsync(async (req, res, next) => {
   // Get all the products in this section
   const sec = await Section.findById(req.params.id).populate("products");
+  if(!sec) {
+    return next(new AppError(`No section with that ID: ${req.params.id}`, 404));
+  }
+  
   // Delete all products in it
   if (sec) {
     await Promise.all(
@@ -74,10 +80,6 @@ exports.deleteSection = catchAsync(async (req, res, next) => {
   }
 
   await Section.findByIdAndDelete(req.params.id);
-  // const section = await Section.findByIdAndDelete(req.params.id);
-  // if (!section) {
-  //   return next(new AppError(`No section with that ID: ${req.params.id}`, 404));
-  // }
 
   res.status(204).json({
     status: "success",

@@ -20,6 +20,7 @@ router
     authController.protect,
     authController.restrictToAdmin,
     categoryController.uploadCategoryPhoto,
+    categoryController.confirmCategoryImage,
     categoryController.uploadCategoryImage,
     categoryController.createCategory
   );
@@ -30,6 +31,7 @@ router
   .patch(
     authController.protect,
     authController.restrictToAdmin,
+    categoryController.uploadCategoryPhoto, 
     categoryController.uploadCategoryImage,
     categoryController.updateCategory
   )
