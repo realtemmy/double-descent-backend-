@@ -1,10 +1,10 @@
 /* eslint-disable import/no-useless-path-segments */
 const multer = require("multer");
-// const sharp = require("sharp");
 const catchAsync = require("./../utils/catchAsync");
 const User = require("./../models/userModel");
 const AppError = require("./../utils/appError");
 const cloudinary = require("./../utils/cloudinary");
+const Email = require("./../utils/email");
 
 const multerStorage = multer.memoryStorage();
 
@@ -112,6 +112,30 @@ exports.updateMe = catchAsync(async (req, res, next) => {
       user: updatedUser,
     },
   });
+});
+
+exports.sendUserMails = catchAsync(async (req, res, next) => {
+  const { emails, subject, message } = req.body;
+  // Send email to a list of users
+
+  try {
+    const email = new Email();
+    email.to = emails;
+    await email.send(subject, message);
+
+    res.status(200).json({
+      status: "success",
+      message: "Email sent",
+    });
+  } catch (error) {
+    console.log(error);
+
+    return next(
+      new AppError(
+        "There was an error sending the email. Please try again later!"
+      )
+    );
+  }
 });
 
 exports.createUser = async (req, res) => {
