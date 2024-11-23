@@ -13,6 +13,7 @@ router
     authController.protect,
     authController.restrictToAdmin,
     productController.uploadProductPhoto,
+    productController.confirmProductImage,
     productController.uploadProductImage,
     productController.createProduct
   );
@@ -27,7 +28,8 @@ router
   .patch(
     authController.protect,
     authController.restrictToAdmin,
-    // productController.uploadProductImage,
+    // productController.uploadProductPhoto,
+    productController.uploadProductImage,
     productController.updateProduct
   )
   .delete(

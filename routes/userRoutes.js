@@ -15,6 +15,8 @@ router.post("/google/signup", authController.googleSignUp)
 router.post("/forgotPassword", authController.forgotPassword);
 router.patch("/resetPassword/:token", authController.resetPassword);
 
+router.post("/send-mail", authController.protect, userControllers.sendUserMails);
+
 router.get("/me", authController.protect, userControllers.getMe);
 router.patch(
   "/updateMyPassword",
@@ -24,9 +26,6 @@ router.patch(
 router.patch(
   "/updateMe",
   authController.protect,
-  // userControllers.uploadUserPhoto,
-  // userControllers.uploadUserToCloudinary,
-  // userControllers.resizeUserPhoto,
   userControllers.updateMe
 );
 

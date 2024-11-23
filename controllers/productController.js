@@ -22,10 +22,18 @@ const upload = multer({
 
 exports.uploadProductPhoto = upload.single("image");
 
-exports.uploadProductImage = catchAsync(async (req, res, next) => {
+exports.confirmProductImage = (req, res, next) => {
   if (!req.file) {
     return next(new AppError("No file uploaded", 400));
   }
+  next();
+};
+
+exports.uploadProductImage = catchAsync(async (req, res, next) => {
+  if (!req.file) {
+    return next();
+  }
+
   const b64 = Buffer.from(req.file.buffer).toString("base64");
   let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
   const result = await cloudinary.uploader.upload(dataURI, {

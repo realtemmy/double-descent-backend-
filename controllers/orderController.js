@@ -14,6 +14,7 @@ exports.getAllOrders = catchAsync(async (req, res) => {
   // console.log(req.query);
   let filter = {};
   if (req.query.type) filter = { status: req.query.type };
+  
   const features = new APIFeatures(Order.find(filter), req.query).paginate();
   const orders = await features.query;
 

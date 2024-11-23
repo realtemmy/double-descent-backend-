@@ -24,7 +24,7 @@ exports.getSection = catchAsync(async (req, res) => {
   // console.log(section);
   if (!section) {
     return next(
-      new AppError(`No section found with that ID: ${req.params.id}`, 404);
+      new AppError(`No section found with that ID: ${req.params.id}`, 404)
     );
   }
 
