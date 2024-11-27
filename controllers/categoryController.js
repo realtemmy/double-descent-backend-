@@ -38,8 +38,8 @@ exports.uploadCategoryImage = catchAsync(async (req, res, next) => {
   let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
   const result = await cloudinary.uploader.upload(dataURI, {
     folder: "category",
-    width: 100,
-    height: 100,
+    width: 1000,
+    height: 1200,
   });
   req.body.image = result.secure_url;
   next();

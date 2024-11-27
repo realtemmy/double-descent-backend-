@@ -1,45 +1,5 @@
 const nodemailer = require("nodemailer");
 
-// const sendEmail = async (options) => {
-//   let transporter = nodemailer.createTransport({
-//     host: "smtp.mailgun.org",
-//     port: 465,
-//     auth: {
-//       user: "postmaster@sandbox73560610ec8c424f9ee4435c42c6d402.mailgun.org",
-//       pass: "4e87beb9154937b0b9ccbad720d39ec8-7ca144d2-f80b874a",
-//     },
-//   });
-//   // port = 465 || 25 || 587
-
-//   const mailOptions = {
-//     from: "Double Descent Superstore <temmy4jamb@gmail.com>",
-//     to: options.email,
-//     subject: options.subject,
-//     // text: options.message,
-//     html: options.html,
-//   };
-//   await transporter.sendMail(mailOptions);
-// };
-
-// module.exports = sendEmail;
-
-/*
-
-Hello [recipient’s name],
-
-We’re super excited to see you join the [online store] community.
-
-We hope you will be happy with [products offered by the online store] and that you will shop with us again and again.
-
-Our goal is to offer the widest range of [products offered by the online store] at the highest quality. If you think we should add any items to our store, don’t hesitate to contact us and share your feedback.
-
-Until then, enjoy your shopping!
-
-Best,
-[store owner’s signature]
-
-*/
-
 class Email {
   // Stripe sends receipt after transaction
   constructor(user, url) {

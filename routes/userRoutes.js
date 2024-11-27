@@ -6,7 +6,7 @@ const authController = require("./../controllers/authController");
 const router = express.Router();
 
 router.post("/signup", authController.signup);
-router.post("/login", authController.login);
+router.post("/login", authController.loggin);
 
 // Google login and sign up
 router.post("/google/login", authController.googleLogin)
