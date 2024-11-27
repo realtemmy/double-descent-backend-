@@ -4,9 +4,9 @@ const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
 const User = require("./../models/userModel");
 const AppError = require("./../utils/appError");
-const catchAsync = require("./../utils/catchAsync");
 // const sendEmail = require("./../utils/email");
 const Email = require("./../utils/email");
+const asyncHandler = require("express-async-handler");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -34,11 +34,11 @@ const createSendToken = (user, statusCode, res) => {
   res.status(statusCode).json({
     status: "success",
     token,
-    data: { user },
+    data: user,
   });
 };
 
-exports.signup = catchAsync(async (req, res, next) => {
+exports.signup = asyncHandler(async (req, res, next) => {
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
@@ -61,7 +61,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.login = catchAsync(async (req, res, next) => {
+exports.login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -71,8 +71,12 @@ exports.login = catchAsync(async (req, res, next) => {
   // If account with email exist
   const user = await User.findOne({ email }).select("+password");
 
-  if(user.isGoogle){
-    return next(new AppError(`Account was created with google, please sign on using google sign in.`))
+  if (user.isGoogle) {
+    return next(
+      new AppError(
+        `Account was created with google, please sign on using google sign in.`
+      )
+    );
   }
 
   // Check if password inputed is equal to the password in DB ie compare passwords
@@ -83,7 +87,7 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
-exports.protect = catchAsync(async (req, res, next) => {
+exports.protect = asyncHandler(async (req, res, next) => {
   // 1) check if there's a token
   let token;
   if (
@@ -133,13 +137,13 @@ exports.restrictToAdmin = catchAsync((req, res, next) => {
   next();
 });
 
-exports.forgotPassword = catchAsync(async (req, res, next) => {
+exports.forgotPassword = asyncHandler(async (req, res, next) => {
   // Get user based on POSTed email
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
     return next(new AppError("There is no user with this email address", 404));
   }
-  
+
   // Generate a random reset token
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
@@ -167,7 +171,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.resetPassword = catchAsync(async (req, res, next) => {
+exports.resetPassword = asyncHandler(async (req, res, next) => {
   // 1) Get userbased on token
   const hashedToken = crypto
     .createHash("sha256")
@@ -190,7 +194,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
-exports.updatePassword = async (req, res, next) => {
+exports.updatePassword = asyncHandler(async (req, res, next) => {
   // Create a field for currentPassword, and new password as password to be able to change
 
   // Get user from collection
@@ -206,9 +210,9 @@ exports.updatePassword = async (req, res, next) => {
   await user.save();
   // Log user in
   createSendToken(user, 200, res);
-};
+});
 
-exports.googleLogin = catchAsync(async (req, res, next) => {
+exports.googleLogin = asyncHandler(async (req, res, next) => {
   const { email } = req.body;
 
   // 1) Check if account exists and is a google type with email
@@ -223,7 +227,7 @@ exports.googleLogin = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
-exports.googleSignUp = catchAsync(async (req, res, next) => {
+exports.googleSignUp = asyncHandler(async (req, res, next) => {
   const { email, picture, given_name } = req.body;
   // check if email already exists in database
   const user = await User.findOne({ email });
@@ -257,6 +261,4 @@ exports.googleSignUp = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.googleAuth = catchAsync(async (req, res, next) => {});
-
-
+exports.googleAuth = asyncHandler(async (req, res, next) => {});
