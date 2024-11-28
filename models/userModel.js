@@ -43,7 +43,19 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
   phone: Number,
-  address: String,
+  location: [
+    {
+      alias: { type: String, default: "Home" },
+      state: { type: String, default: "Lagos" },
+      address: { type: String, required: true },
+      street: { type: String, required: true },
+      LGA: { type: String, default: "Ikorodu" },
+      coordinates: {
+        type: { type: String, enum: ["Point"], default: "Point" },
+        coordinates: { type: [Number], required: true },
+      },
+    },
+  ],
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordExpiresAt: Date,

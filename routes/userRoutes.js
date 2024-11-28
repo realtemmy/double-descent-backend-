@@ -6,16 +6,31 @@ const authController = require("./../controllers/authController");
 const router = express.Router();
 
 router.post("/signup", authController.signup);
-router.post("/login", authController.loggin);
+router.post("/login", authController.login);
 
 // Google login and sign up
-router.post("/google/login", authController.googleLogin)
-router.post("/google/signup", authController.googleSignUp)
+router.post("/google/login", authController.googleLogin);
+router.post("/google/signup", authController.googleSignUp);
 
 router.post("/forgotPassword", authController.forgotPassword);
 router.patch("/resetPassword/:token", authController.resetPassword);
 
-router.post("/send-mail", authController.protect, userControllers.sendUserMails);
+router.post(
+  "/send-mail",
+  authController.protect,
+  userControllers.sendUserMails
+);
+router.post("/address", authController.protect, userControllers.addAddress);
+router.patch(
+  "/address/:id",
+  authController.protect,
+  userControllers.updateAddress
+);
+router.delete(
+  "/address/:id",
+  authController.protect,
+  userControllers.deleteAddress
+);
 
 router.get("/me", authController.protect, userControllers.getMe);
 router.patch(
@@ -23,11 +38,7 @@ router.patch(
   authController.protect,
   authController.updatePassword
 );
-router.patch(
-  "/updateMe",
-  authController.protect,
-  userControllers.updateMe
-);
+router.patch("/updateMe", authController.protect, userControllers.updateMe);
 
 router.patch(
   "/upload-user-image",
