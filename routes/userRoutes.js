@@ -34,7 +34,7 @@ router.delete(
 
 router.get("/me", authController.protect, userControllers.getMe);
 router.patch(
-  "/updateMyPassword",
+  "/update-password",
   authController.protect,
   authController.updatePassword
 );
