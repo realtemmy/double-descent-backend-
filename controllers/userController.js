@@ -149,15 +149,11 @@ exports.addAddress = asyncHandler(async (req, res, next) => {
     state: req.body.state,
     address: req.body.address,
     street: req.body.street,
-    LGA: req.body.LGA,
-    coordinates: {
-      type: "Point",
-      coordinates: [req.body.coordinates],
-    },
+    lga: req.body.lga,
   };
   user.location.push(newAddress);
 
-  await user.save();
+  await user.save({ validateBeforeSave: false });
 
   res.status(200).json({
     status: "success",
@@ -217,7 +213,7 @@ exports.deleteAddress = asyncHandler(async (req, res, next) => {
   // Remove the address
   address.remove();
 
-  await user.save();
+  await user.save({ validateBeforeSave: false });
 
   res.status(204).json({
     status: "success",

@@ -203,7 +203,7 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
   if (!(await user.comparePasswords(req.body.currentPassword, user.password))) {
     return next(new AppError("Your current password is wrong!", 401));
   }
-  // Update password with the one coming from user
+  // Update password with the one coming from req
   user.password = req.body.password;
   user.confirmPassword = req.body.confirmPassword;
   // then save to DB

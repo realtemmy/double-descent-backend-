@@ -49,11 +49,11 @@ const userSchema = new mongoose.Schema({
       state: { type: String, default: "Lagos" },
       address: { type: String, required: true },
       street: { type: String, required: true },
-      LGA: { type: String, default: "Ikorodu" },
-      coordinates: {
-        type: { type: String, enum: ["Point"], default: "Point" },
-        coordinates: { type: [Number], required: true },
-      },
+      lga: { type: String, default: "Ikorodu" },
+      // coordinates: {
+      //   type: { type: String, enum: ["Point"], default: "Point" },
+      //   coordinates: { type: [Number], required: true },
+      // },
     },
   ],
   passwordChangedAt: Date,
