@@ -4,6 +4,7 @@ const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const cloudinary = require("./../utils/cloudinary");
 const APIFeatures = require("./../utils/apiFeatures");
+const Pagination = require("./../utils/pagination");
 
 const multerStorage = multer.memoryStorage();
 
@@ -59,14 +60,23 @@ exports.getAllProducts = catchAsync(async (req, res) => {
   let filter = {};
   if (req.params.categoryId) filter = { category: req.params.categoryId };
   if (req.params.sectionId) filter = { section: req.params.sectionId };
-  const totalDocs = await Product.find(filter).countDocuments();
-  const features = new APIFeatures(Product.find(filter), req.query).paginate();
-  const products = await features.query;
+  // const totalDocs = await Product.find(filter).countDocuments();
+  // const features = new APIFeatures(Product.find(filter), req.query).paginate();
+  // const products = await features.query;
+  // res.status(200).json({
+  //   status: "success",
+  //   results: products.length,
+  //   data: products,
+  //   totalDocs,
+  // });
+  const { page, limit } = req.query;
+  const pagination = new Pagination(page, limit);
+  const totalItems = await Product.countDocuments(filter);
+  const products = await pagination.apply(Product.find(filter));
+  const response = pagination.formatResponse(products, totalItems);
   res.status(200).json({
     status: "success",
-    results: products.length,
-    data: products,
-    totalDocs,
+    ...response,
   });
 });
 

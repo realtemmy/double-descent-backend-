@@ -2,52 +2,64 @@ const Product = require("../models/productModel");
 const Section = require("../models/sectionModel");
 const Category = require("../models/categoryModel");
 const Message = require("./../models/messageModel");
-const catchAsync = require("../utils/catchAsync");
+const asyncHandler = require("express-async-handler");
 const AppError = require("../utils/appError");
 const sendEmail = require("./../utils/email");
 const socketIO = require("./../app");
 
-exports.getSearchResults = catchAsync(async (req, res) => {
-  // or first check products, if empty check sections then category
+exports.getSearchResults = asyncHandler(async (req, res) => {
   const searchValue = req.params.searchValue;
 
+  // Define a common regex for matching
+  const searchRegex = new RegExp(searchValue, "i");
+
   let result = [];
-  // 1) Check Products
-  const products = await Product.find({
-    name: { $regex: ".*" + searchValue + ".*" },
+
+  // 1) Check Products by Name and Brand
+  const productsByName = await Product.find({ name: { $regex: searchRegex } });
+  const productsByBrand = await Product.find({
+    brand: { $regex: searchRegex },
   });
 
-  const prodBrand = await Product.find({
-    brand: { $regex: ".*" + searchValue + ".*" },
-  });
+  result.push(...productsByName, ...productsByBrand);
 
-  result.push(...products, ...prodBrand);
   // 2) Check Sections
-  let sections = await Section.find({
-    name: { $regex: ".*" + searchValue + ".*" },
+  const sections = await Section.find({
+    name: { $regex: searchRegex },
   }).populate("products");
-  sections.forEach((sec) => {
-    const val = sec.products;
-    result.push(...val);
-  });
-  // 3) Check Category
-  let category = await Category.find({
-    name: { $regex: ".*" + searchValue + ".*" },
-  }).populate("products");
-
-  category.forEach((cat) => {
-    let val = cat.products;
-    result.push(...val);
+  sections.forEach((section) => {
+    result.push(...section.products);
   });
 
+  // 3) Check Categories
+  const categories = await Category.find({
+    name: { $regex: searchRegex },
+  }).populate({
+    path: "sections",
+    populate: { path: "products" },
+  });
+  categories.forEach((category) => {
+    category.sections.forEach((section) => {
+      result.push(...section.products);
+    });
+  });
+
+  // Remove duplicates by creating a Set from the result array
+  const uniqueResults = Array.from(new Set(result.map((item) => item._id))).map(
+    (id) => result.find((item) => item._id.equals(id))
+  );
+
+  // Respond with the results
   res.status(200).json({
     status: "success",
-    data: result,
+    results: uniqueResults.length,
+    data: uniqueResults,
   });
 });
 
+
 // Send emails to customers
-exports.sendEmails = catchAsync(async (req, res, next) => {
+exports.sendEmails = asyncHandler(async (req, res, next) => {
   // get user to send the email to
   const { html, users, title } = req.body;
   // html is the design while users will be an array of emails to send to
@@ -71,7 +83,7 @@ exports.sendEmails = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.userComplaintsMessages = catchAsync(async (req, res) => {
+exports.userComplaintsMessages = asyncHandler(async (req, res) => {
   const { message } = req.body;
   // console.log(req.user);
   const userMessage = await Message.create({
