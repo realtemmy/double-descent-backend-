@@ -98,7 +98,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
   }
 
   if (!token) {
-    next(new AppError("You are not logged in! Login to get access", 401));
+    return next(new AppError("You are not logged in! Login to get access", 401));
   }
 
   // verify token
