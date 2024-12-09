@@ -61,10 +61,18 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
   // console.log(req.query);
   // category: "656767dedb64b6362e80f90d,65676843db64b6362e80f916,673f0c1550162a836afcca67";
   let filter = {};
-  if (req.params.categoryId || req.query.category)
-    filter = { category: req.params.categoryId };
-  if (req.params.sectionId || req.query.section)
-    filter = { section: req.params.sectionId };
+  if (req.params.categoryId) {
+    filter.category = req.params.categoryId;
+  } else if (req.query.category) {
+    const categories = req.query.category.split(",").map((id) => id.trim());
+    filter.category = { $in: categories }; // Match any category in the list
+  }
+
+  if (req.params.sectionId) {
+    filter.section = req.params.sectionId;
+  } else if (req.query.section) {
+    filter.section = req.query.section;
+  }
 
   const { page, limit } = req.query;
   const pagination = new Pagination(page, limit);
