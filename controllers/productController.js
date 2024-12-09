@@ -1,5 +1,6 @@
 const multer = require("multer");
 const Product = require("./../models/productModel");
+const Section = require("./../models/sectionModel");
 const Category = require("./../models/categoryModel");
 const AppError = require("./../utils/appError");
 const cloudinary = require("./../utils/cloudinary");
@@ -93,8 +94,31 @@ exports.getProductsByCategoryName = asyncHandler(async (req, res) => {
     Product.find({ category: category[0]._id })
   );
   const response = pagination.formatResponse(products, totalItems);
-  
-  return res.status(200).json({
+
+  res.status(200).json({
+    status: "success",
+    ...response,
+  });
+});
+
+exports.getProductsBySectionName = asyncHandler(async (req, res) => {
+  const section = await Section.find({
+    slug: req.params.sectionName,
+  });
+
+  const { page, limit } = req.query;
+  const pagination = new Pagination(page, limit);
+  const totalItems = await Product.countDocuments({
+    section: section[0]._id,
+  });
+  const products = await pagination.apply(
+    Product.find({ section: section[0]._id })
+  );
+  const response = pagination.formatResponse(products, totalItems);
+
+  // console.log(response);
+
+  res.status(200).json({
     status: "success",
     ...response,
   });
