@@ -1,13 +1,13 @@
 const multer = require("multer");
 const Product = require("./../models/productModel");
-const catchAsync = require("./../utils/catchAsync");
+const Category = require("./../models/categoryModel");
 const AppError = require("./../utils/appError");
 const cloudinary = require("./../utils/cloudinary");
 const APIFeatures = require("./../utils/apiFeatures");
 const Pagination = require("./../utils/pagination");
+const asyncHandler = require("express-async-handler");
 
 const multerStorage = multer.memoryStorage();
-
 const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image")) {
     cb(null, true);
@@ -30,7 +30,7 @@ exports.confirmProductImage = (req, res, next) => {
   next();
 };
 
-exports.uploadProductImage = catchAsync(async (req, res, next) => {
+exports.uploadProductImage = asyncHandler(async (req, res, next) => {
   if (!req.file) {
     return next();
   }
@@ -47,7 +47,7 @@ exports.uploadProductImage = catchAsync(async (req, res, next) => {
   next();
 });
 
-exports.getFeaturedProducts = catchAsync(async (req, res) => {
+exports.getFeaturedProducts = asyncHandler(async (req, res) => {
   const featuredProducts = await Product.find({ isFeatured: true });
   res.status(200).json({
     status: "success",
@@ -56,31 +56,51 @@ exports.getFeaturedProducts = catchAsync(async (req, res) => {
   });
 });
 
-exports.getAllProducts = catchAsync(async (req, res) => {
+exports.getAllProducts = asyncHandler(async (req, res) => {
+  // console.log(req.query);
+  // category: "656767dedb64b6362e80f90d,65676843db64b6362e80f916,673f0c1550162a836afcca67";
   let filter = {};
-  if (req.params.categoryId) filter = { category: req.params.categoryId };
-  if (req.params.sectionId) filter = { section: req.params.sectionId };
-  // const totalDocs = await Product.find(filter).countDocuments();
-  // const features = new APIFeatures(Product.find(filter), req.query).paginate();
-  // const products = await features.query;
-  // res.status(200).json({
-  //   status: "success",
-  //   results: products.length,
-  //   data: products,
-  //   totalDocs,
-  // });
+  if (req.params.categoryId || req.query.category)
+    filter = { category: req.params.categoryId };
+  if (req.params.sectionId || req.query.section)
+    filter = { section: req.params.sectionId };
+
   const { page, limit } = req.query;
   const pagination = new Pagination(page, limit);
   const totalItems = await Product.countDocuments(filter);
   const products = await pagination.apply(Product.find(filter));
   const response = pagination.formatResponse(products, totalItems);
+
+  // console.log(response);
+
   res.status(200).json({
     status: "success",
     ...response,
   });
 });
 
-exports.getProduct = catchAsync(async (req, res, next) => {
+exports.getProductsByCategoryName = asyncHandler(async (req, res) => {
+  const category = await Category.find({
+    slug: req.params.categoryName,
+  });
+
+  const { page, limit } = req.query;
+  const pagination = new Pagination(page, limit);
+  const totalItems = await Product.countDocuments({
+    category: category[0]._id,
+  });
+  const products = await pagination.apply(
+    Product.find({ category: category[0]._id })
+  );
+  const response = pagination.formatResponse(products, totalItems);
+  
+  return res.status(200).json({
+    status: "success",
+    ...response,
+  });
+});
+
+exports.getProduct = asyncHandler(async (req, res, next) => {
   const product = await Product.findById(req.params.id).populate(
     "category",
     "name"
@@ -96,7 +116,7 @@ exports.getProduct = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createProduct = catchAsync(async (req, res) => {
+exports.createProduct = asyncHandler(async (req, res) => {
   if (!req.body.category) req.body.category = req.params.categoryId;
   const newProduct = await Product.create(req.body);
   res.status(201).json({
@@ -105,7 +125,7 @@ exports.createProduct = catchAsync(async (req, res) => {
   });
 });
 
-exports.updateProduct = catchAsync(async (req, res, next) => {
+exports.updateProduct = asyncHandler(async (req, res, next) => {
   const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
@@ -131,7 +151,7 @@ const getPublicIdFromImageUrl = (imageUrl) => {
   return publicId;
 };
 
-exports.deleteProduct = catchAsync(async (req, res, next) => {
+exports.deleteProduct = asyncHandler(async (req, res, next) => {
   // find the product to be deleted
   const prod = await Product.findById(req.params.id);
   const public_id = getPublicIdFromImageUrl(prod.image);
