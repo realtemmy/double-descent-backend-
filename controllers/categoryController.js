@@ -5,6 +5,7 @@ const Category = require("./../models/categoryModel");
 const Section = require("./../models/sectionModel");
 const Product = require("./../models/productModel");
 const AppError = require("./../utils/appError");
+const Pagination = require("./../utils/pagination");
 
 // REmember to refactor this uploading of images to a single function in utils/cloudinary
 
@@ -46,6 +47,8 @@ exports.uploadCategoryImage = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllCategories = catchAsync(async (req, res) => {
+  let filter = {};
+  if (req.query.name) filter = { name: req.query.name };
   const categories = await Category.find();
   res.status(200).json({
     status: "success",
