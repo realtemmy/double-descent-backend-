@@ -22,6 +22,7 @@ router.route("/page").get(productController.getAllProducts);
 
 router.route("/featured-products").get(productController.getFeaturedProducts);
 router.route("/category/:categoryName").get(productController.getProductsByCategoryName);
+router.route("/section/:sectionName").get(productController.getProductsBySectionName);
 
 router
   .route("/:id")
