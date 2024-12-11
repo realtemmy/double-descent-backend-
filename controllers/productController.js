@@ -58,35 +58,81 @@ exports.getFeaturedProducts = asyncHandler(async (req, res) => {
 });
 
 exports.getAllProducts = asyncHandler(async (req, res) => {
-  // console.log(req.query);
-  // category: "656767dedb64b6362e80f90d,65676843db64b6362e80f916,673f0c1550162a836afcca67";
+  const { page, limit, category, section, search } = req.query;
+  const { categoryId, sectionId } = req.params;
+
   let filter = {};
-  if (req.params.categoryId) {
-    filter.category = req.params.categoryId;
-  } else if (req.query.category) {
-    const categories = req.query.category.split(",").map((id) => id.trim());
-    filter.category = { $in: categories }; // Match any category in the list
+  let result = [];
+
+  // Filter by category or section
+  if (categoryId || category) {
+    const categories = category
+      ? category.split(",").map((id) => id.trim())
+      : [categoryId];
+    filter.category = { $in: categories };
   }
 
-  if (req.params.sectionId) {
-    filter.section = req.params.sectionId;
-  } else if (req.query.section) {
-    filter.section = req.query.section;
+  if (sectionId || section) {
+    filter.section = sectionId || section;
   }
 
-  const { page, limit } = req.query;
-  const pagination = new Pagination(page, limit);
+  // Check if search is valid (not "null", "undefined", or empty string)
+  if (
+    search &&
+    search !== "null" &&
+    search !== "undefined" &&
+    search.trim() !== ""
+  ) {
+    const searchRegex = new RegExp(search, "i");
+    filter.$or = [{ name: searchRegex }, { brand: searchRegex }];
+
+    // Search-related sections and categories
+    const sections = await Section.find({
+      name: { $regex: searchRegex },
+    }).populate("products");
+    sections.forEach((section) => {
+      result.push(...section.products);
+    });
+
+    const categories = await Category.find({
+      name: { $regex: searchRegex },
+    }).populate("products");
+    categories.forEach((category) => {
+      result.push(...category.products);
+    });
+  }
+
+  console.log("Filter: ", filter);
+
+  // Fetch products matching the filters
   const totalItems = await Product.countDocuments(filter);
+  const pagination = new Pagination(page, limit);
   const products = await pagination.apply(Product.find(filter));
-  const response = pagination.formatResponse(products, totalItems);
+  result.push(...products);
 
-  // console.log(response);
+  // Remove duplicates by ID
+  const uniqueResults = Array.from(new Set(result.map((item) => item._id))).map(
+    (id) => result.find((item) => item._id.equals(id))
+  );
+
+  // Format the response
+  const formattedResponse = pagination.formatResponse(
+    uniqueResults,
+    totalItems
+  );
+
+  console.log("Products: ", products);
+  console.log("Unique: ", uniqueResults);
+  console.log("Response: ", formattedResponse);
 
   res.status(200).json({
     status: "success",
-    ...response,
+    results: uniqueResults.length,
+    ...formattedResponse,
+    data: uniqueResults,
   });
 });
+
 
 exports.getProductsByCategoryName = asyncHandler(async (req, res) => {
   const category = await Category.find({

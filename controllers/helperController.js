@@ -15,13 +15,15 @@ exports.getSearchResults = asyncHandler(async (req, res) => {
 
   let result = [];
 
-  // 1) Check Products by Name and Brand
-  const productsByName = await Product.find({ name: { $regex: searchRegex } });
-  const productsByBrand = await Product.find({
-    brand: { $regex: searchRegex },
+  // 1) Search Products by Name or Brand
+  const products = await Product.find({
+    $or: [
+      { name: { $regex: searchRegex } },
+      { brand: { $regex: searchRegex } },
+    ],
   });
 
-  result.push(...productsByName, ...productsByBrand);
+  result.push(...products);
 
   // 2) Check Sections
   const sections = await Section.find({
@@ -34,14 +36,9 @@ exports.getSearchResults = asyncHandler(async (req, res) => {
   // 3) Check Categories
   const categories = await Category.find({
     name: { $regex: searchRegex },
-  }).populate({
-    path: "sections",
-    populate: { path: "products" },
-  });
+  }).populate("products");
   categories.forEach((category) => {
-    category.sections.forEach((section) => {
-      result.push(...section.products);
-    });
+    result.push(...category.products);
   });
 
   // Remove duplicates by creating a Set from the result array
@@ -56,7 +53,6 @@ exports.getSearchResults = asyncHandler(async (req, res) => {
     data: uniqueResults,
   });
 });
-
 
 // Send emails to customers
 exports.sendEmails = asyncHandler(async (req, res, next) => {
