@@ -102,8 +102,6 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
     });
   }
 
-  console.log("Filter: ", filter);
-
   // Fetch products matching the filters
   const totalItems = await Product.countDocuments(filter);
   const pagination = new Pagination(page, limit);
@@ -120,11 +118,6 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
     uniqueResults,
     totalItems
   );
-
-  console.log("Products: ", products);
-  console.log("Unique: ", uniqueResults);
-  console.log("Response: ", formattedResponse);
-
   res.status(200).json({
     status: "success",
     results: uniqueResults.length,

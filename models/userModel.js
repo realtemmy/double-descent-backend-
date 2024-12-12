@@ -3,63 +3,63 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "a user must have a name"],
-  },
-  email: {
-    type: String,
-    required: [true, "a user must have an email"],
-    unique: true,
-    lowercase: true,
-    validate: [validator.isEmail, "Please provide a valid email."],
-  },
-  password: {
-    type: String,
-    required: [true, "a user must have a password"],
-    select: false,
-  },
-  confirmPassword: {
-    // Remember to validate
-    type: String,
-    required: [true, "please input confirm password"],
-    validate: {
-      validator: function (el) {
-        return el === this.password;
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "a user must have a name"],
+    },
+    email: {
+      type: String,
+      required: [true, "a user must have an email"],
+      unique: true,
+      lowercase: true,
+      validate: [validator.isEmail, "Please provide a valid email."],
+    },
+    password: {
+      type: String,
+      required: [true, "a user must have a password"],
+      select: false,
+    },
+    confirmPassword: {
+      // Remember to validate
+      type: String,
+      required: [true, "please input confirm password"],
+      validate: {
+        validator: function (el) {
+          return el === this.password;
+        },
+        message: "Passwords are not the same!",
       },
-      message: "Passwords are not the same!",
     },
-  },
-  photo: String,
-  role: {
-    // if u later change to isAdmin format, remamber to change in restrict middleware at authcontroller
-    type: String,
-    default: "user",
-  },
-  isGoogle: {
-    type: Boolean,
-    default: false,
-    select: false,
-  },
-  phone: Number,
-  location: [
-    {
-      alias: { type: String, default: "Home" },
-      state: { type: String, default: "Lagos" },
-      address: { type: String, required: true },
-      street: { type: String, required: true },
-      lga: { type: String, default: "Ikorodu" },
-      // coordinates: {
-      //   type: { type: String, enum: ["Point"], default: "Point" },
-      //   coordinates: { type: [Number], required: true },
-      // },
+    photo: String,
+    role: {
+      // if u later change to isAdmin format, remamber to change in restrict middleware at authcontroller
+      type: String,
+      default: "user",
     },
-  ],
-  passwordChangedAt: Date,
-  passwordResetToken: String,
-  passwordExpiresAt: Date,
-});
+    phone: Number,
+    location: [
+      {
+        alias: { type: String, default: "Home" },
+        state: { type: String, default: "Lagos" },
+        address: { type: String, required: true },
+        street: { type: String, required: true },
+        lga: { type: String, default: "Ikorodu" },
+        // coordinates: {
+        //   type: { type: String, enum: ["Point"], default: "Point" },
+        //   coordinates: { type: [Number], required: true },
+        // },
+      },
+    ],
+    passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordExpiresAt: Date,
+  },
+  {
+    timestamps: true,
+  }
+);
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();

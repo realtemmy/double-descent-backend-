@@ -4,9 +4,22 @@ const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
 const User = require("./../models/userModel");
 const AppError = require("./../utils/appError");
-// const sendEmail = require("./../utils/email");
 const Email = require("./../utils/email");
 const asyncHandler = require("express-async-handler");
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+async function verifyGoogleToken(token) {
+  const ticket = await client.verifyIdToken({
+    idToken: token,
+    audience: process.env.GOOGLE_CLIENT_ID, // Ensure it matches your app's client ID
+  });
+  const payload = ticket.getPayload();
+
+  // Extract user info
+  const { sub, email, given_name, picture } = payload;
+  return { googleId: sub, email, given_name, picture };
+}
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -98,7 +111,9 @@ exports.protect = asyncHandler(async (req, res, next) => {
   }
 
   if (!token) {
-    return next(new AppError("You are not logged in! Login to get access", 401));
+    return next(
+      new AppError("You are not logged in! Login to get access", 401)
+    );
   }
 
   // verify token
@@ -213,52 +228,21 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
 });
 
 exports.googleLogin = asyncHandler(async (req, res, next) => {
-  const { email } = req.body;
+  const { token } = req.body;
+  const userData = await verifyGoogleToken(token);
 
-  // 1) Check if account exists and is a google type with email
-  const user = await User.findOne({ email }).select("+isGoogle");
+  let user = await User.findOne({ email: userData.email });
 
-  // 2) if account was not created by google login, throw error
-  if (!user || !user.isGoogle) {
-    return next(new AppError(`Email is not registered with google login`));
+  if (!user) {
+    user = new User({
+      name: userData.given_name,
+      email: userData.email,
+      photo: userData.picture,
+    });
+    user.save({ validateBeforeSave: false });
   }
 
   // 3) allow login, send jwt, response etc
   createSendToken(user, 200, res);
 });
 
-exports.googleSignUp = asyncHandler(async (req, res, next) => {
-  const { email, picture, given_name } = req.body;
-  // check if email already exists in database
-  const user = await User.findOne({ email });
-
-  // if it does, throw error that email already exists
-  if (user) {
-    return next(new AppError(`Email already exists`, 403));
-  }
-
-  const newUser = new User({
-    name: given_name,
-    email,
-    photo: picture,
-    isGoogle: true,
-  });
-
-  // disable validation before save
-  await newUser.save({ validateBeforeSave: false });
-
-  try {
-    const email = new Email(newUser, "http://localhost:3000");
-    await email.sendWelcome();
-    createSendToken(newUser, 201, res);
-  } catch (error) {
-    return next(
-      new AppError(
-        "There was an error sending the email. Please try again later!",
-        500
-      )
-    );
-  }
-});
-
-exports.googleAuth = asyncHandler(async (req, res, next) => {});
