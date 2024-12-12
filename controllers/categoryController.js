@@ -69,8 +69,6 @@ exports.getCategory = catchAsync(async (req, res) => {
 });
 
 exports.createCategory = catchAsync(async (req, res) => {
-  console.log(req.body);
-
   const newCategory = await Category.create(req.body);
   res.status(201).json({
     status: "success",
