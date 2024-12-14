@@ -19,7 +19,7 @@ exports.getAllOrders = catchAsync(async (req, res) => {
   } else filter = { status: type };
 
   const totalItems = await Order.countDocuments(filter);
-  const pagination = new Pagination(page, limit);
+  const pagination = new Pagination(page, limit).setSort();
   const orders = await pagination.apply(Order.find(filter));
   // console.log(orders);
   
