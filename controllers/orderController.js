@@ -8,19 +8,30 @@ const catchAsync = require("../utils/catchAsync");
 const Order = require("./../models/orderModel");
 // const User = require("./../models/userModel");
 const sendEmail = require("./../utils/email");
-const APIFeatures = require("./../utils/apiFeatures");
+const Pagination = require("./../utils/pagination");
 
 exports.getAllOrders = catchAsync(async (req, res) => {
   // console.log(req.query);
+  const { page, limit, type } = req.query;
   let filter = {};
-  if (req.query.type) filter = { status: req.query.type };
+  if (type === "all") {
+    filter = {};
+  } else filter = { status: type };
+
+  const totalItems = await Order.countDocuments(filter);
+  const pagination = new Pagination(page, limit);
+  const orders = await pagination.apply(Order.find(filter));
+  // console.log(orders);
   
-  const features = new APIFeatures(Order.find(filter), req.query).paginate();
-  const orders = await features.query;
+
+  const formattedResponse = pagination.formatResponse(orders, totalItems);
+
+  // console.log(formattedResponse);
+  
 
   res.status(200).json({
     status: "success",
-    data: orders,
+    data: formattedResponse,
   });
 });
 
@@ -142,7 +153,6 @@ const transformedItemsFunc = (cartItems, deliveryFee) => {
 
 exports.getCheckoutSession = catchAsync(async (req, res) => {
   const { address, phone, cartItems, deliveryFee } = req.body;
-  console.log("Delivery fee: ", deliveryFee);
   // Create customer..what is customer already exists?
   const customer = await stripe.customers.create({
     metadata: {
