@@ -144,7 +144,7 @@ app.post("/paystack/webhook", async (req, res) => {
       user: data.metadata.userId,
       transactionId: transactionId,
       customerId: data.customer.customer_code,
-      address: data.metadata.address,
+      address: data.metadata.address.address,
       phone: data.metadata.phone,
       totalAmount: data.amount / 100,
       paymentMode: "Paystack",
@@ -155,15 +155,18 @@ app.post("/paystack/webhook", async (req, res) => {
         productId: product._id,
         quantity: product.quantity,
         price: product.price / 100,
-        image: product.image
+        image: product.image,
       })),
     });
+    // refund.processed, refund.failed, reversed
     // Process the successful transaction to maybe fund wallet and update your WalletModel
     console.log(`Transaction ${transactionId} was successful`);
     const latestOrder = await Order.findById(newOder._id).populate({
       path: "user",
-      select: "name email"
-    })
+      select: "name email",
+    });
+    console.log(latestOrder);
+    
     // seend order to admin
     io.emit("newOrder", latestOrder);
   }
