@@ -165,7 +165,6 @@ app.post("/paystack/webhook", async (req, res) => {
       path: "user",
       select: "name email",
     });
-    console.log(latestOrder);
     
     // seend order to admin
     io.emit("newOrder", latestOrder);
