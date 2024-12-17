@@ -154,7 +154,7 @@ app.post("/paystack/webhook", async (req, res) => {
         name: product.name,
         productId: product._id,
         quantity: product.quantity,
-        price: product.price / 100,
+        price: product.price,
         image: product.image,
       })),
     });

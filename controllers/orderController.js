@@ -54,10 +54,7 @@ exports.getUserOrder = catchAsync(async (req, res) => {
 
 exports.getOrder = catchAsync(async (req, res) => {
   // remember to populate with users
-  const order = await Order.findById(req.params.id).populate({
-    path: "user",
-    select: "email name",
-  });
+  const order = await Order.findById(req.params.id)
   res.status(200).json({
     status: "success",
     data: order,

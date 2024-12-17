@@ -19,7 +19,7 @@ router
 
 router
   .route("/:id")
-  .get(orderController.getOrder)
+  .get(authController.protect, orderController.getOrder)
   // .patch(authController.protect, orderController.confirmOrder);
 
 router
