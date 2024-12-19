@@ -144,7 +144,7 @@ app.post("/paystack/webhook", async (req, res) => {
       user: data.metadata.userId,
       transactionId: transactionId,
       customerId: data.customer.customer_code,
-      address: data.metadata.address.address,
+      address: data.metadata.address,
       phone: data.metadata.phone,
       totalAmount: data.amount / 100,
       paymentMode: "Paystack",
