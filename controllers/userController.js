@@ -30,8 +30,8 @@ exports.uploadUserToCloudinary = asyncHandler(async (req, res, next) => {
   let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
   const cldRes = await cloudinary.uploader.upload(dataURI, {
     folder: "user",
-    width: 400,
-    height: 400,
+    width: 1200,
+    height: 1200,
   });
   req.body.photo = cldRes.secure_url;
   const updatedUserImage = await User.findByIdAndUpdate(req.user.id, req.body, {
