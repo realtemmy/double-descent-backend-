@@ -11,6 +11,10 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: [true, "An order must have a transactionId"],
     },
+    transactionReference: {
+      type: String,
+      retuired: [true, "Order is missing transaction reference"],
+    },
     customerId: String,
     address: {
       type: String,
@@ -56,6 +60,12 @@ const orderSchema = new mongoose.Schema(
         message: "{value} is not supported.",
       },
     },
+    refund: {
+      refundReference: String,
+      amount: Number,
+      status: String,
+      processedAt: Date,
+    },
     createdAt: {
       type: Date,
       default: Date.now(),
@@ -68,6 +78,12 @@ const orderSchema = new mongoose.Schema(
     deliveryFee: {
       type: Number,
       required: [true, "Delivery fee not set"],
+    },
+    statusDates: {
+      paid: { type: Date },
+      confirmed: { type: Date },
+      delivered: { type: Date },
+      cancelled: { type: Date },
     },
   },
   {
@@ -83,8 +99,18 @@ const orderSchema = new mongoose.Schema(
 //   next();
 // });
 
+orderSchema.pre("save", function (next) {
+  if (!this.isModified("status")) return next();
+
+  const now = new Date();
+  if (this.status === "paid") this.statusDates.paid = now;
+  if (this.status === "confirmed") this.statusDates.confirmed = now;
+  if (this.status === "delivered") this.statusDates.delivered = now;
+  if (this.status === "cancelled") this.statusDates.cancelled = now;
+
+  next();
+});
+
 const Order = mongoose.model("Order", orderSchema);
 
 module.exports = Order;
-
-// customerId, date, [productBought], location, paymentId

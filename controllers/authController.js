@@ -240,9 +240,21 @@ exports.googleLogin = asyncHandler(async (req, res, next) => {
       photo: userData.picture,
     });
     user.save({ validateBeforeSave: false });
+
+    try {
+      const email = new Email(user, "http://localhost:3000");
+      await email.sendWelcome();
+      createSendToken(newUser, 201, res);
+    } catch (error) {
+      return next(
+        new AppError(
+          "There was an error sending the email. Please try again later!",
+          500
+        )
+      );
+    }
   }
 
   // 3) allow login, send jwt, response etc
   createSendToken(user, 200, res);
 });
-

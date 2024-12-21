@@ -7,8 +7,9 @@ const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const Order = require("./../models/orderModel");
 // const User = require("./../models/userModel");
-const sendEmail = require("./../utils/email");
+// const sendEmail = require("./../utils/email");
 const Pagination = require("./../utils/pagination");
+const Email = require("./../utils/email");
 
 exports.getAllOrders = catchAsync(async (req, res) => {
   // console.log(req.query);
@@ -22,12 +23,10 @@ exports.getAllOrders = catchAsync(async (req, res) => {
   const pagination = new Pagination(page, limit).setSort();
   const orders = await pagination.apply(Order.find(filter));
   // console.log(orders);
-  
 
   const formattedResponse = pagination.formatResponse(orders, totalItems);
 
   // console.log(formattedResponse);
-  
 
   res.status(200).json({
     status: "success",
@@ -54,7 +53,7 @@ exports.getUserOrder = catchAsync(async (req, res) => {
 
 exports.getOrder = catchAsync(async (req, res) => {
   // remember to populate with users
-  const order = await Order.findById(req.params.id)
+  const order = await Order.findById(req.params.id);
   res.status(200).json({
     status: "success",
     data: order,
@@ -90,15 +89,11 @@ exports.confirmOrder = catchAsync(async (req, res, next) => {
     </div>
 </body>
   `;
-  try {
-    await sendEmail({
-      email: order.user.email,
-      subject: `Order confirmation - ${order._id}`,
-      // message,
-      html,
-    });
 
-    const docsCount = await Order.find().countDocuments();
+  const email = new Email(order.user);
+  try {
+    await email.send(`Order confirmation - ${order._id}`, html);
+
     const updatedOrder = await Order.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -117,36 +112,6 @@ exports.confirmOrder = catchAsync(async (req, res, next) => {
     return next(new AppError("There was a problem sending the mail", 500));
   }
 });
-
-const transformedItemsFunc = (cartItems, deliveryFee) => {
-  const transformedItems = cartItems.map((item) => ({
-    quantity: item.quantity,
-    price_data: {
-      currency: "NGN",
-      unit_amount: item.price * 100,
-      product_data: {
-        name: item.name,
-        images: [item.image],
-      },
-    },
-  }));
-
-  transformedItems.push({
-    quantity: 1,
-    price_data: {
-      currency: "NGN",
-      unit_amount: deliveryFee * 100,
-      product_data: {
-        name: "delivery fee",
-        images: [
-          "https://c8.alamy.com/comp/J27BPE/motorcycle-delivery-vehicle-icon-J27BPE.jpg",
-        ],
-      },
-    },
-  });
-
-  return transformedItems;
-};
 
 exports.getCheckoutSession = catchAsync(async (req, res) => {
   const { address, phone, cartItems, deliveryFee } = req.body;
