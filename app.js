@@ -41,7 +41,6 @@ app.post(
   express.raw({ type: "application/json" }),
   async (request, response) => {
     const sig = request.headers["stripe-signature"];
-    // console.log("Getting here");
 
     let event;
 
@@ -60,6 +59,7 @@ app.post(
         io.emit("newOrder", createdOrder);
         break;
       // ... handle other event types
+      // eg refund and update to cancelled maybe
       default:
         console.log(`Unhandled event type ${event.type}`);
     }
@@ -112,7 +112,6 @@ app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(compression());
 
-
 /* ====================================
   PayStack Webhook
 ==================================== */
@@ -127,11 +126,9 @@ const verify = (eventData, signature) => {
   return expectedSignature === signature;
 };
 
-app.post("/paystack/webhook", async (req, res) => {
+app.post("/paystack/webhook", async (req, res, next) => {
   const eventData = req.body;
   const signature = req.headers["x-paystack-signature"];
-
-  console.log(eventData);
 
   if (!verify(eventData, signature)) {
     return res.sendStatus(400);
@@ -143,6 +140,7 @@ app.post("/paystack/webhook", async (req, res) => {
     const newOder = await Order.create({
       user: data.metadata.userId,
       transactionId: transactionId,
+      transactionReference: data.reference,
       customerId: data.customer.customer_code,
       address: data.metadata.address,
       phone: data.metadata.phone,
@@ -159,15 +157,37 @@ app.post("/paystack/webhook", async (req, res) => {
       })),
     });
     // refund.processed, refund.failed, reversed
-    // Process the successful transaction to maybe fund wallet and update your WalletModel
-    console.log(`Transaction ${transactionId} was successful`);
     const latestOrder = await Order.findById(newOder._id).populate({
       path: "user",
       select: "name email",
     });
-    
+
     // seend order to admin
     io.emit("newOrder", latestOrder);
+  }
+  if (eventData.event === "refund.processed") {
+    // update status to cancelled and refunded
+    const { data } = eventData;
+    const order = Order.findOne({
+      transactionReference: data.transaction_reference,
+    });
+    if (!order) {
+      return next(
+        new AppError(
+          `No order with reference ${data.transaction_reference} found`,
+          404
+        )
+      );
+    }
+    (order.status = "cancelled"),
+      (order.refund = {
+        refundReference: data.refund_reference,
+        amount: data.amount,
+        status: data.status,
+        processedAt: new Date(),
+      });
+    await order.save();
+    // Send an email to the user and move all these to order controller
   }
 
   return res.sendStatus(200);

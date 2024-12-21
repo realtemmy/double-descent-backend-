@@ -92,6 +92,29 @@ class Email {
   `;
     await this.send("Welcome to Double Descent Superstore.", html);
   }
+  async sendOrderConfirmation () {
+    // const order 
+      const html = `
+    <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+    <div
+        style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);">
+        <h1 style="color: #333;">Order Confirmation</h1>
+        <p style="color: #666;">Dear ${order.user.name},</p>
+        <p style="color: #666;">Your order for ${order.products
+          .map((product) => product.name + " x " + product.quantity)
+          .join(", ")} has been successfully placed.</p>
+        <p style="color: #666;">Order Number: ${order._id}</p>
+        <p style="color: #666;">Total amount: &#x20A6;${order.totalAmount}</p>
+        <p style="color: #666;">Order will be delivered to "${
+          order.address
+        }" and we will be reaching out to you at 0${order.phone}.<p/>
+        <p style="color: #666;">Please contact us at <a href="mailto:temiloluwaogunti8@gmail.com" style="display: inline-block; padding: 5px 10px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 3px; margin-top: 20px;"> sales@doubledecent.com</a> or <a href="tel:+2348066771553" style="display: inline-block; padding: 5px 10px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 3px;;">Call us</a> to make edit to anay changes.</p>
+        <p style="color: #666;">Thank you for shopping with us.</p>
+    </div>
+</body>
+  `;
+  await this.send(`Order confirmation - ${orderId}`)
+  }
 }
 
 module.exports = Email;
