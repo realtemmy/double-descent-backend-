@@ -13,7 +13,7 @@ const orderSchema = new mongoose.Schema(
     },
     transactionReference: {
       type: String,
-      retuired: [true, "Order is missing transaction reference"],
+      required: [true, "Order is missing transaction reference"],
     },
     customerId: String,
     address: {
