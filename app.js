@@ -184,8 +184,8 @@ app.post("/paystack/webhook", async (req, res, next) => {
     }
     (order.status = "cancelled"),
       (order.refund = {
-        refundReference: data.refund_reference,
-        amount: data.amount,
+        refundReference: data.transaction_reference,
+        amount: data.amount / 100,
         status: data.status,
         processedAt: new Date(),
       });
