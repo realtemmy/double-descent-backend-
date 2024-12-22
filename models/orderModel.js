@@ -91,14 +91,6 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-// orderSchema.pre(/^find/, function (next) {
-//   this.populate({
-//     path: "user",
-//     select: "email name",
-//   });
-//   next();
-// });
-
 orderSchema.pre("save", function (next) {
   if (!this.isModified("status")) return next();
 
