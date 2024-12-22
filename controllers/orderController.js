@@ -90,27 +90,35 @@ exports.confirmOrder = catchAsync(async (req, res, next) => {
 </body>
   `;
 
-  const email = new Email(order.user);
-  try {
-    await email.send(`Order confirmation - ${order._id}`, html);
+  const updatedOrder = await Order.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+  res.status(200).json({
+    status: "success",
+    data: updatedOrder,
+  });
 
-    const updatedOrder = await Order.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+  // const email = new Email(order.user);
+  // try {
+  //   // await email.send(`Order confirmation - ${order._id}`, html);
 
-    res.status(200).json({
-      status: "success",
-      data: updatedOrder,
-      totalDocs: docsCount,
-    });
-  } catch (error) {
-    return next(new AppError("There was a problem sending the mail", 500));
-  }
+  //   const updatedOrder = await Order.findByIdAndUpdate(
+  //     req.params.id,
+  //     req.body,
+  //     {
+  //       new: true,
+  //       runValidators: true,
+  //     }
+  //   );
+
+  //   // res.status(200).json({
+  //   //   status: "success",
+  //   //   data: updatedOrder,
+  //   // });
+  // } catch (error) {
+  //   return next(new AppError("There was a problem sending the mail", 500));
+  // }
 });
 
 exports.getCheckoutSession = catchAsync(async (req, res) => {

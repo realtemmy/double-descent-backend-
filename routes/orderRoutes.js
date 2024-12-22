@@ -6,10 +6,9 @@ const paymentController = require("./../controllers/paymentController");
 const router = express.Router();
 
 router.route("/").get(authController.protect, orderController.getAllOrders);
-router.route(
-  "/:id/confirm",
+router.route("/:id/confirm").patch(
   authController.protect,
-  authController.restrictToAdmin,
+  // authController.restrictToAdmin,
   orderController.confirmOrder
 );
 
@@ -17,10 +16,8 @@ router
   .route("/user")
   .get(authController.protect, orderController.getAllUserOrder);
 
-router
-  .route("/:id")
-  .get(authController.protect, orderController.getOrder)
-  // .patch(authController.protect, orderController.confirmOrder);
+router.route("/:id").get(authController.protect, orderController.getOrder);
+// .patch(authController.protect, orderController.confirmOrder);
 
 router
   .route("/checkout")

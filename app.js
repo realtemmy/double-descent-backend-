@@ -156,8 +156,8 @@ app.post("/paystack/webhook", async (req, res, next) => {
         image: product.image,
       })),
       statusDates: {
-        paid: data.paid_at
-      }
+        paid: data.paid_at,
+      },
     });
     // refund.processed, refund.failed, reversed
     const latestOrder = await Order.findById(newOder._id).populate({
@@ -171,7 +171,7 @@ app.post("/paystack/webhook", async (req, res, next) => {
   if (eventData.event === "refund.processed") {
     // update status to cancelled and refunded
     const { data } = eventData;
-    const order = Order.findOne({
+    const order = await Order.findOne({
       transactionReference: data.transaction_reference,
     });
     if (!order) {
