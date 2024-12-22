@@ -66,10 +66,6 @@ const orderSchema = new mongoose.Schema(
       status: String,
       processedAt: Date,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now(),
-    },
     paymentMode: {
       type: String,
       required: [true, "Please enter mode of  payment"],
@@ -94,12 +90,28 @@ const orderSchema = new mongoose.Schema(
 orderSchema.pre("save", function (next) {
   if (!this.isModified("status")) return next();
 
-
   const now = new Date();
   if (this.status === "paid") this.statusDates.paid = now;
   if (this.status === "confirmed") this.statusDates.confirmed = now;
   if (this.status === "delivered") this.statusDates.delivered = now;
   if (this.status === "cancelled") this.statusDates.cancelled = now;
+
+  next();
+});
+
+orderSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate();
+
+  console.log("Update: ", update);
+
+  if (update.status) {
+    const now = new Date();
+
+    if (update.status === "paid") update["statusDates.paid"] = now;
+    if (update.status === "confirmed") update["statusDates.confirmed"] = now;
+    if (update.status === "delivered") update["statusDates.delivered"] = now;
+    if (update.status === "cancelled") update["statusDates.cancelled"] = now;
+  }
 
   next();
 });
