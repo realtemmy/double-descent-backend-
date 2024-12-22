@@ -80,10 +80,10 @@ const orderSchema = new mongoose.Schema(
       required: [true, "Delivery fee not set"],
     },
     statusDates: {
-      paid: { type: Date },
-      confirmed: { type: Date },
-      delivered: { type: Date },
-      cancelled: { type: Date },
+      paid: { type: Date, default: null },
+      confirmed: { type: Date, default: null },
+      delivered: { type: Date, default: null },
+      cancelled: { type: Date, default: null },
     },
   },
   {
