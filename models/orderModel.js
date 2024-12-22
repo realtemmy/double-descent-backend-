@@ -94,6 +94,7 @@ const orderSchema = new mongoose.Schema(
 orderSchema.pre("save", function (next) {
   if (!this.isModified("status")) return next();
 
+
   const now = new Date();
   if (this.status === "paid") this.statusDates.paid = now;
   if (this.status === "confirmed") this.statusDates.confirmed = now;

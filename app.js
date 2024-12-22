@@ -155,6 +155,9 @@ app.post("/paystack/webhook", async (req, res, next) => {
         price: product.price,
         image: product.image,
       })),
+      statusDates: {
+        paid: data.paid_at
+      }
     });
     // refund.processed, refund.failed, reversed
     const latestOrder = await Order.findById(newOder._id).populate({
