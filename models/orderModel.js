@@ -87,6 +87,7 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
+
 orderSchema.pre("save", function (next) {
   if (!this.isModified("status")) return next();
 
@@ -102,7 +103,7 @@ orderSchema.pre("save", function (next) {
 orderSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
 
-  console.log("Update: ", update);
+  // console.log("Update: ", update);
 
   if (update.status) {
     const now = new Date();
