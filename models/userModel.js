@@ -41,11 +41,21 @@ const userSchema = new mongoose.Schema(
     phone: Number,
     location: [
       {
-        alias: { type: String, default: "Home" },
-        state: { type: String, default: "Lagos" },
+        alias: {
+          type: String,
+          default: "Home",
+          validate: {
+            validator: function (value) {
+              const aliases = this.location.map((loc) => loc.alias);
+             return aliases.filter((alias) => alias === value).length === 1;
+            },
+            message:"Alias must be unique for esch value"
+          },
+        },
+        state: { type: String, default: "lagos" },
         address: { type: String, required: true },
         street: { type: String, required: true },
-        lga: { type: String, default: "Ikorodu" },
+        lga: { type: String, default: "ikorodu" },
         // coordinates: {
         //   type: { type: String, enum: ["Point"], default: "Point" },
         //   coordinates: { type: [Number], required: true },
@@ -60,8 +70,6 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
-
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
