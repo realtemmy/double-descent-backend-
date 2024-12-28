@@ -18,18 +18,13 @@ const getDaysDiff = (daysAgo) => {
 };
 
 exports.getAllOrders = catchAsync(async (req, res) => {
-  // console.log(req.query);
   const { page, limit, type, duration } = req.query;
-  // How do I filter by date?
-  //  - Get the time difference in days between the duration and now eg 7 days = now - 7 days
   const daysAgo = getDaysDiff(duration);
-  //  - Get all orders that are greater than the time difference using mongoose $lte
 
   let filter = {};
   if (type === "all") {
     filter = {};
   } else filter = { status: type };
-
   if (duration) {
     filter.createdAt = { $gte: daysAgo };
   }
@@ -37,7 +32,6 @@ exports.getAllOrders = catchAsync(async (req, res) => {
   const totalItems = await Order.countDocuments(filter);
   const pagination = new Pagination(page, limit).setSort();
   const orders = await pagination.apply(Order.find(filter));
-  // console.log(orders);
 
   const formattedResponse = pagination.formatResponse(orders, totalItems);
 
