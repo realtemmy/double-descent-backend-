@@ -178,16 +178,16 @@ exports.updateAddress = asyncHandler(async (req, res, next) => {
   if (req.body.state) address.state = req.body.state;
   if (req.body.address) address.address = req.body.address;
   if (req.body.street) address.street = req.body.street;
-  if (req.body.LGA) address.LGA = req.body.LGA;
-  if (req.body.coordinates && req.body.coordinates.length === 2) {
-    address.coordinates = {
-      type: "Point",
-      coordinates: req.body.coordinates, // Ensure this is an array of [longitude, latitude]
-    };
-  }
+  if (req.body.lga) address.lga = req.body.lga;
+  // if (req.body.coordinates && req.body.coordinates.length === 2) {
+  //   address.coordinates = {
+  //     type: "Point",
+  //     coordinates: req.body.coordinates, // Ensure this is an array of [longitude, latitude]
+  //   };
+  // }
 
   // Save the updated user document
-  await user.save();
+  await user.save({ validateBeforeSave: false });
 
   // Respond to the client
   res.status(200).json({
