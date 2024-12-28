@@ -26,6 +26,14 @@ exports.uploadUserPhoto = upload.single("photo");
 
 exports.uploadUserToCloudinary = asyncHandler(async (req, res, next) => {
   if (!req.file) return next(new AppError("No file uploaded", 400));
+
+  // If there's an image url in the request body, delete it from cloudinary before uploading a new one
+
+  if (req.user.photo) {
+    const publicId = req.user.photo.split("/").pop().split(".")[0];
+    await cloudinary.uploader.destroy(publicId);
+  }
+
   const b64 = Buffer.from(req.file.buffer).toString("base64");
   let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
   const cldRes = await cloudinary.uploader.upload(dataURI, {
