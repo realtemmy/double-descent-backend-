@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
+const AppError = require("../utils/appError");
 
 const userSchema = new mongoose.Schema(
   {
@@ -44,13 +45,7 @@ const userSchema = new mongoose.Schema(
         alias: {
           type: String,
           default: "Home",
-          validate: {
-            validator: function (value) {
-              const aliases = this.location.map((loc) => loc.alias);
-             return aliases.filter((alias) => alias === value).length === 1;
-            },
-            message:"Alias must be unique for esch value"
-          },
+          
         },
         state: { type: String, default: "lagos" },
         address: { type: String, required: true },
@@ -71,6 +66,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
@@ -79,6 +75,17 @@ userSchema.pre("save", async function (next) {
   this.confirmPassword = undefined;
   next();
 });
+userSchema.pre("save", function (next) {
+  const aliases = this.location.map((loc) => loc.alias);
+  const uniqueAliases = new Set(aliases);
+
+  if (aliases.length !== uniqueAliases.size) {
+    return next(new AppError("Location aliases must be unique per user."));
+  }
+
+  next();
+});
+
 
 userSchema.methods.comparePasswords = async function (
   userPassword,
