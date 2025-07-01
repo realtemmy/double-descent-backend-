@@ -8,6 +8,8 @@ const APIFeatures = require("./../utils/apiFeatures");
 const Pagination = require("./../utils/pagination");
 const asyncHandler = require("express-async-handler");
 
+const redisClient = require("./../redis");
+
 const multerStorage = multer.memoryStorage();
 const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image")) {
@@ -64,6 +66,19 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
   let filter = {};
   let result = [];
 
+  // Create unique cache key based on query and params
+  const cacheKey = `products:${page || 1}:${limit || 10}:${
+    (category ?? categoryId) || ""
+  }:${(section ?? sectionId) || ""}:${search || ""}`;
+
+  // Check if products exist in Redis cache
+  const productsCache = await redisClient.get(cacheKey);
+  if (productsCache) {
+    // console.log("Serving products from Redis cache");
+    const cachedData = JSON.parse(productsCache);
+    return res.status(200).json(cachedData);
+  }
+
   // Filter by category or section
   if (categoryId || category) {
     const categories = category
@@ -76,7 +91,7 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
     filter.section = sectionId || section;
   }
 
-  // Check if search is valid (not "null", "undefined", or empty string)
+  // Search logic
   if (
     search &&
     search !== "null" &&
@@ -86,7 +101,6 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
     const searchRegex = new RegExp(search, "i");
     filter.$or = [{ name: searchRegex }, { brand: searchRegex }];
 
-    // Search-related sections and categories
     const sections = await Section.find({
       name: { $regex: searchRegex },
     }).populate("products");
@@ -102,30 +116,36 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
     });
   }
 
-  // Fetch products matching the filters
+  // Fetch products matching filters
   const totalItems = await Product.countDocuments(filter);
   const pagination = new Pagination(page, limit);
   const products = await pagination.apply(Product.find(filter));
   result.push(...products);
 
-  // Remove duplicates by ID
-  const uniqueResults = Array.from(new Set(result.map((item) => item._id))).map(
-    (id) => result.find((item) => item._id.equals(id))
-  );
+  // Remove duplicates by _id
+  const uniqueResults = Array.from(
+    new Set(result.map((item) => item._id.toString()))
+  ).map((id) => result.find((item) => item._id.toString() === id));
 
-  // Format the response
+  // Format response
   const formattedResponse = pagination.formatResponse(
     uniqueResults,
     totalItems
   );
-  res.status(200).json({
+
+  const responseData = {
     status: "success",
     results: uniqueResults.length,
     ...formattedResponse,
     data: uniqueResults,
-  });
-});
+  };
 
+  // Cache the response data in Redis (stringified)
+  await redisClient.setEx(cacheKey, 3600, JSON.stringify(responseData));
+
+  // console.log("From Mongodb database.");
+  res.status(200).json(responseData);
+});
 
 exports.getProductsByCategoryName = asyncHandler(async (req, res) => {
   const category = await Category.find({
@@ -172,10 +192,26 @@ exports.getProductsBySectionName = asyncHandler(async (req, res) => {
 });
 
 exports.getProduct = asyncHandler(async (req, res, next) => {
-  const product = await Product.findById(req.params.id).populate(
-    "category",
-    "name"
-  );
+  // Firstly check if proeuct exists in redis cache
+  let product;
+  const cachedProduct = await redisClient.get(`product:${req.params.id}`);
+  if (cachedProduct) {
+    product = JSON.parse(cachedProduct);
+  } else {
+    // If not in cache, fetch from database
+    product = await Product.findById(req.params.id).populate(
+      "category",
+      "name"
+    );
+    if (product) {
+      // Store the product in cache for future requests
+      await redisClient.set(
+        `product:${req.params.id}`,
+        JSON.stringify(product)
+      );
+    }
+  }
+  // If product id not in cache or database, return error
   if (!product) {
     return next(
       new AppError(`No product found with that ID: ${req.params.id}`, 404)
@@ -190,6 +226,8 @@ exports.getProduct = asyncHandler(async (req, res, next) => {
 exports.createProduct = asyncHandler(async (req, res) => {
   if (!req.body.category) req.body.category = req.params.categoryId;
   const newProduct = await Product.create(req.body);
+  // Add to redis cache
+  redisClient.set(`product:${newProduct._id}`, JSON.stringify(newProduct));
   res.status(201).json({
     status: "success",
     data: newProduct,
@@ -197,6 +235,7 @@ exports.createProduct = asyncHandler(async (req, res) => {
 });
 
 exports.updateProduct = asyncHandler(async (req, res, next) => {
+  // Maybe invalidate cache here or if there;s a way I can update the cache directly, do that
   const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
@@ -235,6 +274,8 @@ exports.deleteProduct = asyncHandler(async (req, res, next) => {
       new AppError(`No product found with that ID: ${req.params.id}`, 404)
     );
   }
+  // Invalidate cache
+  await redisClient.del(`product:${req.params.id}`);
   res.status(204).json({
     status: "success",
     data: null,

@@ -1,11 +1,12 @@
 /* eslint-disable import/no-useless-path-segments */
+const asyncHandler = require("express-async-handler");
 const crypto = require("crypto");
 const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
+
 const User = require("./../models/userModel");
 const AppError = require("./../utils/appError");
 const Email = require("./../utils/email");
-const asyncHandler = require("express-async-handler");
 const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -142,7 +143,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
   next();
 });
 
-exports.restrictToAdmin = catchAsync((req, res, next) => {
+exports.restrictToAdmin = asyncHandler((req, res, next) => {
   // might later use isAdmin in userModel, remember to change.
   if (!req.user.role === "admin") {
     return next(
@@ -244,7 +245,7 @@ exports.googleLogin = asyncHandler(async (req, res, next) => {
     try {
       const email = new Email(user, "http://localhost:3000");
       await email.sendWelcome();
-      createSendToken(newUser, 201, res);
+      createSendToken(user, 201, res);
     } catch (error) {
       return next(
         new AppError(

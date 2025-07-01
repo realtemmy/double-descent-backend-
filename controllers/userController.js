@@ -1,7 +1,6 @@
 /* eslint-disable import/no-useless-path-segments */
 const multer = require("multer");
 const asyncHandler = require("express-async-handler");
-const catchAsync = require("./../utils/catchAsync");
 const User = require("./../models/userModel");
 const AppError = require("./../utils/appError");
 const cloudinary = require("./../utils/cloudinary");

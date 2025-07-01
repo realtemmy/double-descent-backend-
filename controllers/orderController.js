@@ -2,9 +2,9 @@ const dotenv = require("dotenv");
 dotenv.config({ path: "./../config.env" });
 const https = require("https");
 
+const asynchandler = require("express-async-handler");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const AppError = require("../utils/appError");
-const catchAsync = require("../utils/catchAsync");
 const Order = require("./../models/orderModel");
 // const User = require("./../models/userModel");
 // const sendEmail = require("./../utils/email");
@@ -17,7 +17,7 @@ const getDaysDiff = (daysAgo) => {
   return now.toISOString().split("T")[0]; // Returns date in YYYY-MM-DD format
 };
 
-exports.getAllOrders = catchAsync(async (req, res) => {
+exports.getAllOrders = asynchandler(async (req, res) => {
   const { page, limit, type, duration } = req.query;
   const daysAgo = getDaysDiff(duration);
 
@@ -41,7 +41,7 @@ exports.getAllOrders = catchAsync(async (req, res) => {
   });
 });
 
-exports.getAllUserOrder = catchAsync(async (req, res) => {
+exports.getAllUserOrder = asynchandler(async (req, res) => {
   const orders = await Order.find({ user: req.user.id });
   res.status(200).json({
     status: "success",
@@ -50,7 +50,7 @@ exports.getAllUserOrder = catchAsync(async (req, res) => {
 });
 
 // getUserOrder(single order)
-exports.getUserOrder = catchAsync(async (req, res) => {
+exports.getUserOrder = asynchandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
   res.status(200).json({
     status: "success",
@@ -58,7 +58,7 @@ exports.getUserOrder = catchAsync(async (req, res) => {
   });
 });
 
-exports.getOrder = catchAsync(async (req, res) => {
+exports.getOrder = asynchandler(async (req, res) => {
   // remember to populate with users
   const order = await Order.findById(req.params.id);
   res.status(200).json({
@@ -67,7 +67,7 @@ exports.getOrder = catchAsync(async (req, res) => {
   });
 });
 
-exports.confirmOrder = catchAsync(async (req, res, next) => {
+exports.confirmOrder = asynchandler(async (req, res, next) => {
   // check if order exists
   const order = await Order.findById(req.params.id).populate({
     path: "user",
@@ -128,7 +128,7 @@ exports.confirmOrder = catchAsync(async (req, res, next) => {
   // }
 });
 
-exports.getCheckoutSession = catchAsync(async (req, res) => {
+exports.getCheckoutSession = asynchandler(async (req, res) => {
   const { address, phone, cartItems, deliveryFee } = req.body;
   // Create customer..what is customer already exists?
   const customer = await stripe.customers.create({

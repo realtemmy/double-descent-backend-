@@ -1,11 +1,13 @@
+const asynchandler = require("express-async-handler");
 const multer = require("multer");
 const cloudinary = require("./../utils/cloudinary");
-const catchAsync = require("./../utils/catchAsync");
 const Category = require("./../models/categoryModel");
 const Section = require("./../models/sectionModel");
 const Product = require("./../models/productModel");
 const AppError = require("./../utils/appError");
 const Pagination = require("./../utils/pagination");
+
+const redisClient = require("./../redis");
 
 // REmember to refactor this uploading of images to a single function in utils/cloudinary
 
@@ -33,7 +35,7 @@ exports.confirmCategoryImage = (req, res, next) => {
   next();
 };
 
-exports.uploadCategoryImage = catchAsync(async (req, res, next) => {
+exports.uploadCategoryImage = asynchandler(async (req, res, next) => {
   if (!req.file) return next();
   const b64 = Buffer.from(req.file.buffer).toString("base64");
   let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
@@ -46,10 +48,19 @@ exports.uploadCategoryImage = catchAsync(async (req, res, next) => {
   next();
 });
 
-exports.getAllCategories = catchAsync(async (req, res) => {
-  let filter = {};
-  if (req.query.name) filter = { name: req.query.name };
-  const categories = await Category.find();
+exports.getAllCategories = asynchandler(async (req, res) => {
+  console.log("Getting here");
+  let categories;
+  // Check Redis cache first
+  const categoryCache = await redisClient.get("categories".toString());
+  if (categoryCache) {
+    categories = JSON.parse(categoryCache);
+  } else {
+    // If not in cache, fetch from database
+    categories = await Category.find();
+    // Store in Redis cache for future requests
+    await redisClient.setEx("categories", 3600, JSON.stringify(categories));
+  }
   res.status(200).json({
     status: "success",
     results: categories.length,
@@ -57,7 +68,7 @@ exports.getAllCategories = catchAsync(async (req, res) => {
   });
 });
 
-exports.getCategory = catchAsync(async (req, res) => {
+exports.getCategory = asynchandler(async (req, res) => {
   const category = await Category.findById(req.params.id)
     .populate("sections")
     .populate("products");
@@ -68,7 +79,7 @@ exports.getCategory = catchAsync(async (req, res) => {
   });
 });
 
-exports.createCategory = catchAsync(async (req, res) => {
+exports.createCategory = asynchandler(async (req, res) => {
   const newCategory = await Category.create(req.body);
   res.status(201).json({
     status: "success",
@@ -76,7 +87,7 @@ exports.createCategory = catchAsync(async (req, res) => {
   });
 });
 
-exports.updateCategory = catchAsync(async (req, res, next) => {
+exports.updateCategory = asynchandler(async (req, res, next) => {
   const { name, image } = req.body;
   const updateData = {};
   if (name) updateData.name = name;
@@ -109,46 +120,7 @@ const getPublicIdFromImageUrl = (imageUrl) => {
   return publicId;
 };
 
-// exports.deleteCategory = catchAsync(async (req, res, next) => {
-//   const cat = await Category.findById(req.params.id)
-//     .populate("sections")
-//     .populate("products");
-//   if (!cat) {
-//     return next(
-//       new AppError(`No category found with that ID: ${req.params.id}`, 404)
-//     );
-//   }
-//   // Get image public_id if there is an image
-//   const public_id = cat.image ? getPublicIdFromImageUrl(cat.image) : null;
-//   if (public_id) {
-//     await cloudinary.uploader.destroy(public_id);
-//   }
-
-//   // Delete image at cloudinary
-//   await cloudinary.uploader.destroy(public_id);
-
-//   // Delete sections
-//   await Promise.all(
-//     cat.sections.map(async (category) => {
-//       await Section.findByIdAndDelete(category._id);
-//     })
-//   );
-//   // Delete products
-//   await Promise.all(
-//     cat.products.map(async (category) => {
-//       await Product.findByIdAndDelete(category._id);
-//     })
-//   );
-//   // Delete category from database
-//   await Category.findByIdAndDelete(req.params.id);
-
-//   res.status(204).json({
-//     status: "success",
-//     data: null,
-//   });
-// });
-
-exports.deleteCategory = catchAsync(async (req, res, next) => {
+exports.deleteCategory = asynchandler(async (req, res, next) => {
   const cat = await Category.findById(req.params.id)
     .populate("sections")
     .populate("products");
