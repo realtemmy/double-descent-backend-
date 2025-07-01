@@ -1,9 +1,9 @@
 require("dotenv").config();
+const asynchandler = require("express-async-handler");
 const stripe = require("stripe")(
   "sk_test_51LsCPvGIPXZEyyN0PgYbiIPhS1S8a8zUO7SQrueZ6iBaC85607HMxa3g20e4GOqeIWhfVQEEuawcC13xW9QZG07x00iISqD203"
 );
 const https = require("https");
-const catchAsync = require("./../utils/catchAsync");
 
 // create payment for paystack here,the transfer mode etc.
 
@@ -16,7 +16,7 @@ const calculateTotalAmount = (items, deliveryFee) => {
   return amount * 100;
 };
 
-exports.createPaymentIntent = catchAsync(async (req, res) => {
+exports.createPaymentIntent = asynchandler(async (req, res) => {
   const { cartItems, deliveryFee, address, phone, email, user_id } = req.body;
   // Reveives the whole item as an array, the user_id,
   // name, email address, and delivery fee
@@ -34,7 +34,7 @@ exports.createPaymentIntent = catchAsync(async (req, res) => {
   });
 });
 
-exports.getPaystackCheckoutSession = catchAsync(async (request, response) => {
+exports.getPaystackCheckoutSession = asynchandler(async (request, response) => {
   const { address, phone, cartItems, deliveryFee } = request.body;
 
   console.log("Paystack: Getting here");
