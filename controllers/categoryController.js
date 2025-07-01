@@ -1,4 +1,4 @@
-const asynchandler = require("express-async-handler")
+const asynchandler = require("express-async-handler");
 const multer = require("multer");
 const cloudinary = require("./../utils/cloudinary");
 const Category = require("./../models/categoryModel");
@@ -6,6 +6,8 @@ const Section = require("./../models/sectionModel");
 const Product = require("./../models/productModel");
 const AppError = require("./../utils/appError");
 const Pagination = require("./../utils/pagination");
+
+const redisClient = require("./../redis");
 
 // REmember to refactor this uploading of images to a single function in utils/cloudinary
 
@@ -47,9 +49,18 @@ exports.uploadCategoryImage = asynchandler(async (req, res, next) => {
 });
 
 exports.getAllCategories = asynchandler(async (req, res) => {
-  let filter = {};
-  if (req.query.name) filter = { name: req.query.name };
-  const categories = await Category.find();
+  console.log("Getting here");
+  let categories;
+  // Check Redis cache first
+  const categoryCache = await redisClient.get("categories".toString());
+  if (categoryCache) {
+    categories = JSON.parse(categoryCache);
+  } else {
+    // If not in cache, fetch from database
+    categories = await Category.find();
+    // Store in Redis cache for future requests
+    await redisClient.setEx("categories", 3600, JSON.stringify(categories));
+  }
   res.status(200).json({
     status: "success",
     results: categories.length,

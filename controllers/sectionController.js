@@ -4,13 +4,32 @@ const AppError = require("./../utils/appError");
 const Product = require("../models/productModel");
 const APIFeatures = require("./../utils/apiFeatures");
 
+const redisClient = require("./../redis");
+
 exports.getAllSections = asynchandler(async (req, res) => {
   const filter = req.params.categoryId
     ? { category: req.params.categoryId }
     : {};
-  const query = Section.find(filter).populate("category", "name");
-  const features = new APIFeatures(query, req.query).paginate();
-  const sections = await features.query;
+
+  let sections;
+  // Check if section exists on redis.
+  const sectionsCache = await redisClient.get(`sections:${filter?.category}`);
+
+  if (sectionsCache) {
+    sections = JSON.parse(sectionsCache);
+  } else {
+    const query = Section.find(filter).populate("category", "name");
+    const features = new APIFeatures(query, req.query).paginate();
+    sections = await features.query;
+
+    await redisClient.setEx(
+      `sections:${filter?.category}`,
+      3600,
+      JSON.stringify(sections)
+    );
+  }
+
+  // const sections = await features.query;
   res.status(200).json({
     status: "success",
     results: sections.length,
@@ -66,10 +85,10 @@ exports.updateSection = asynchandler(async (req, res) => {
 exports.deleteSection = asynchandler(async (req, res, next) => {
   // Get all the products in this section
   const sec = await Section.findById(req.params.id).populate("products");
-  if(!sec) {
+  if (!sec) {
     return next(new AppError(`No section with that ID: ${req.params.id}`, 404));
   }
-  
+
   // Delete all products in it
   if (sec) {
     await Promise.all(
