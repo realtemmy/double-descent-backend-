@@ -244,7 +244,7 @@ exports.googleLogin = asyncHandler(async (req, res, next) => {
     try {
       const email = new Email(user, "http://localhost:3000");
       await email.sendWelcome();
-      createSendToken(newUser, 201, res);
+      createSendToken(user, 201, res);
     } catch (error) {
       return next(
         new AppError(
